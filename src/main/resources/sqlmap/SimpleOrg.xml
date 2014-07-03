@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="SimpleOrg">
+
+    <typeAlias alias="simpleOrg" type="com.gusi.boms.dto.SimpleOrg"/>
+
+    <cacheModel type="MEMORY" id="parameterCache">
+        <property name="reference-type" value="SOFT"/>
+        <flushInterval hours="3"/>
+    </cacheModel>
+
+    <select id="queryOrgsApi" resultClass="simpleOrg" cacheModel="parameterCache">
+        SELECT id, orgName, address FROM dbo.T_OMS_ORGANIZATION with(nolock)
+        WHERE company = #company# and STATUS in ($status$)
+        and updateTime between #startTime# and #endTime#
+        ORDER BY orgLevel
+    </select>
+
+</sqlMap>

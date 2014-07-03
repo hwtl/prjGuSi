@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeContractRecords">
+
+    <insert id="insert" parameterClass="employeeContractRecords">
+        INSERT INTO [dbo].[T_OMS_EMPLOYEE_CONTRACT_RECORDS]
+        (
+             [userCode]
+            ,[contractType]
+            ,[startTime]
+            ,[endTime]
+            ,[status]
+            ,[creator]
+            ,[createTime]
+        )
+        VALUES
+        (
+           #userCode#
+          ,#contractType:LONGVARCHAR#
+          ,#startTime:TIMESTAMP#
+          ,#endTime:TIMESTAMP#
+          ,0
+          ,#creator#
+          ,getDate()
+        )
+    </insert>
+
+    <select id="countByEntity" parameterClass="employeeContractRecords" resultClass="Integer">
+        select * from  [dbo].[T_OMS_EMPLOYEE_CONTRACT_RECORDS]
+        where   userCode = #userCode#
+    </select>
+
+    <update id="update" parameterClass="employeeContractRecords">
+        UPDATE [dbo].[T_OMS_EMPLOYEE_CONTRACT_RECORDS]
+        set
+        updateTime = getDate(),
+                [endTime] = #endTime:TIMESTAMP#
+        <dynamic >
+            <isNotNull prepend="," property="contractType">
+                [contractType] = #contractType#
+            </isNotNull>
+            <isNotEqual prepend="," property="status" compareValue="0">
+                [status] = #status#
+            </isNotEqual>
+            <isNotNull prepend="," property="startTime">
+                [startTime] = #startTime:TIMESTAMP#
+            </isNotNull>
+            <isNotEqual prepend="," property="updator" compareValue="0">
+                [updator] = #updator#
+            </isNotEqual>
+        </dynamic>
+        where id = #id#
+    </update>
+
+    <select id="findById" parameterClass="Integer" resultClass="employeeContractRecords">
+        select * from T_OMS_EMPLOYEE_CONTRACT_RECORDS where id = #id#
+    </select>
+    
+    <update id="deleteByUserCode" parameterClass="Integer">
+        update  [dbo].[T_OMS_EMPLOYEE_CONTRACT_RECORDS]
+        set status = -1
+        where userCode = #userCode#
+    </update>
+
+
+    <select id="query" parameterClass="integer" resultClass="employeeContractRecords">
+        select * from T_OMS_EMPLOYEE_CONTRACT_RECORDS where status = 0 and userCode = #userCode#
+    </select>
+
+    <delete id="delCs" parameterClass="map">
+        DELETE FROM T_OMS_EMPLOYEE_CONTRACT_RECORDS WHERE
+        <isNotNull property="delIds">
+            <![CDATA[ id in ]]>
+            <iterate property="delIds" conjunction="," open="(" close=")">
+                #delIds[]#
+            </iterate>
+        </isNotNull>
+    </delete>
+
+</sqlMap>

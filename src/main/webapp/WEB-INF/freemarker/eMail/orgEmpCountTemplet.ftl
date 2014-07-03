@@ -1,0 +1,1 @@
+你好，${organization.orgName}${orgEmployeeCount.maxCount}人编制人数，已于${orgEmployeeCount.endTime?string("yyyy年MM月dd日")}到期。

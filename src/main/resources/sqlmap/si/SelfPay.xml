@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="SelfPay">
+
+    <typeAlias alias="selfPay" type="com.gusi.socialInsurance.model.SelfPay"/>
+    <typeAlias alias="excelSelfPay" type="com.gusi.socialInsurance.dto.ExcelSelfPay"/>
+    <typeAlias alias="selfPayWithLocation" type="com.gusi.socialInsurance.dto.SelfPayWithLocation"/>
+
+    <insert id="insert">
+        INSERT INTO [dbo].[T_OMS_SI_SELFPAY]
+               ([userCode]
+               ,[userName]
+               ,[orgId]
+               ,[orgName]
+               ,[paymentBase]
+               ,[paymentStatus]
+               ,[changeTypeId]
+               ,[paymentMoney]
+               ,[companyMoney]
+               ,[personalMoney]
+               ,[payBeginDate]
+               ,[extraBeginDate]
+               ,[extraEndDate]
+               ,[createTime]
+               ,[creator]
+               ,updateTime
+               ,updator
+               )
+       SELECT #userCode#
+             ,b.userNameCn
+             ,o.id
+             ,o.orgName
+             ,#paymentBase#
+             ,#paymentStatus#
+             ,#changeTypeId#
+             ,#companyMoney# + #personalMoney#
+             ,#companyMoney#
+             ,#personalMoney#
+             ,#payBeginDate#
+             ,#extraBeginDate#
+             ,#extraEndDate#
+             ,GETDATE()
+             ,#creator#
+             ,GETDATE()
+             ,#creator#
+       FROM dbo.T_OMS_EMPLOYEE_BASEINFOR b WITH(NOLOCK)
+       LEFT JOIN dbo.T_OMS_ORGANIZATION o WITH(NOLOCK) ON b.orgId = o.id
+       WHERE b.userCode = #userCode#
+    </insert>
+
+    <update id="update">
+        UPDATE [dbo].[T_OMS_SI_SELFPAY]
+        SET
+        [updateTime] = GETDATE()
+        ,[updator] = #updator#
+        ,[paymentBase] = #paymentBase#
+        ,[paymentStatus] = #paymentStatus#
+        ,[changeTypeId] = #changeTypeId#
+        ,[paymentMoney] = #companyMoney# + #personalMoney#
+        ,[companyMoney] = #companyMoney#
+        ,[personalMoney] = #personalMoney#
+        ,[payBeginDate] = #payBeginDate#
+        ,[payEndDate] = #payEndDate#
+        ,[extraBeginDate] = #extraBeginDate#
+        ,[extraEndDate] = #extraEndDate#
+        WHERE id = #id#
+    </update>
+
+    <update id="confirmStatus">
+        UPDATE selfPay
+        SET selfPay.updator = #updator#
+      	   ,selfPay.updateTime = GETDATE()
+      	   ,selfPay.paymentStatus = #newPaymentStatus#
+        FROM dbo.T_OMS_SI_SELFPAY AS selfPay
+        	INNER JOIN dbo.T_OMS_SI_BATCH AS batch WITH(nolock)
+        		ON selfPay.userCode = batch.userCode
+        		AND batch.batchId = #batchId#
+        		AND batch.status = 1
+        		AND batch.applyStatus = 1
+        		AND selfPay.status = 1
+				<isNotEmpty prepend="AND" property="oldPaymentStatus">
+	        		<![CDATA[ selfPay.paymentStatus IN ]]>
+					<iterate property="oldPaymentStatus" conjunction="," open="(" close=")">
+						#oldPaymentStatus[]#
+					</iterate>
+				</isNotEmpty>
+        		AND selfPay.changeTypeId = #changeTypeId#
+    </update>
+
+    <sql id="paginateWhere">
+        <dynamic prepend="where">
+            <isEqual compareValue="0" prepend="and" property="selfPaySearch.leave">
+                EXISTS (SELECT 1 FROM dbo.T_OMS_EMPLOYEE_BASEINFOR WITH(nolock) WHERE userCode = s.userCode AND status IN ('正式','试用期'))
+            </isEqual>
+            <isEqual compareValue="1" prepend="and" property="selfPaySearch.leave">
+                EXISTS (SELECT 1 FROM dbo.T_OMS_EMPLOYEE_BASEINFOR WITH(nolock) WHERE userCode = s.userCode AND status IN ('正式','试用期','离职'))
+            </isEqual>
+            <isNotEmpty prepend="and" property="selfPaySearch.paymentBase">
+                s.paymentBase = #selfPaySearch.paymentBase#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.paymentStatus">
+                s.paymentStatus = #selfPaySearch.paymentStatus#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.payBeginDateStart">
+                s.payBeginDate >= #selfPaySearch.payBeginDateStart#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.payBeginDateEnd">
+                s.payBeginDate <![CDATA[ <= ]]> #selfPaySearch.payBeginDateEnd#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.payEndDateStart">
+                s.payEndDate >= #selfPaySearch.payEndDateStart#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.payEndDateEnd">
+                s.payEndDate <![CDATA[ <= ]]> #selfPaySearch.payEndDateEnd#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.extraBeginDate">
+                s.extraBeginDate >= #selfPaySearch.extraBeginDate#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.extraEndDate">
+                s.extraEndDate <![CDATA[ <= ]]> #selfPaySearch.extraEndDate#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.createTimeStart">
+                s.createTime >= #selfPaySearch.createTimeStart#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.createTimeEnd">
+                s.createTime <![CDATA[ < ]]> DATEADD(DAY, 1, #selfPaySearch.createTimeEnd#)
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.keyword">
+                (s.userCode like '%'+ #selfPaySearch.keyword# +'%' or s.userName like '%'+ #selfPaySearch.keyword# +'%')
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.status">
+                s.status = #selfPaySearch.status#
+            </isNotEmpty>
+            <isEmpty prepend="and" property="selfPaySearch.status">
+                s.status = 1
+            </isEmpty>
+            <isNotEmpty prepend="and" property="selfPaySearch.orgId">
+                exists (
+                    SELECT 1 FROM dbo.T_OMS_ORGANIZATION o WITH(NOLOCK)
+                    WHERE s.orgid = o.id and o.orgLongCode LIKE (
+                        SELECT orgLongCode FROM dbo.T_OMS_ORGANIZATION WITH(NOLOCK) WHERE ID = #selfPaySearch.orgId#
+                    )+'%'
+                )
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+
+    <select id="queryForPaginate" resultClass="selfPay">
+            select *
+            from
+            (
+                SELECT
+                row_number() over (order by s.createTime desc) as rownum
+                ,s.id
+                ,s.userCode
+                ,s.userName
+                ,s.orgId
+                ,s.orgName
+                ,s.paymentBase
+                ,s.paymentStatus
+                ,s.paymentMoney
+                ,s.companyMoney
+                ,s.personalMoney
+                ,convert(datetime,s.payBeginDate, 120) as payBeginDate
+                ,convert(datetime,s.payEndDate, 120) as payEndDate
+                ,convert(datetime,s.extraBeginDate, 120) as extraBeginDate
+                ,convert(datetime,s.extraEndDate, 120) as extraEndDate
+                ,s.changeTypeId
+                ,s.status
+                ,s.sort
+                ,s.createTime
+                ,s.creator
+                ,s.updateTime
+                ,s.updator
+                FROM dbo.T_OMS_SI_SELFPAY s WITH(NOLOCK)
+                <isParameterPresent>
+                    <include refid="paginateWhere" />
+                </isParameterPresent>
+            ) as T
+            where    T.rownum > #startNo# and T.rownum <![CDATA[ <= ]]> #endNo#
+    </select>
+
+    <select id="countForPaginate" resultClass="integer">
+        SELECT
+        count(1)
+        FROM dbo.T_OMS_SI_SELFPAY s WITH(NOLOCK)
+        <isParameterPresent>
+            <include refid="paginateWhere" />
+        </isParameterPresent>
+    </select>
+
+	<select id="queryForSelfPayByStatus" resultClass="selfPayWithLocation">
+		SELECT
+	        s.userCode
+	        ,s.userName
+	        ,s.orgName
+	        ,empBase.credentialsNo
+	        ,s.paymentBase
+	        ,s.paymentMoney
+	        ,s.companyMoney
+	        ,s.personalMoney
+	        ,base.paymentLocationId
+	        ,CAST(s.payBeginDate AS DATETIME) AS payBeginDate
+	        ,CAST(s.payEndDate AS DATETIME) AS payEndDate
+	        ,CAST(s.extraBeginDate AS DATETIME) AS extraBeginDate
+	        ,CAST(s.extraEndDate AS DATETIME) AS extraEndDate
+	        ,s.changeTypeId
+            ,s.status
+            ,s.createTime
+            ,s.creator
+            ,s.updateTime
+            ,s.updator
+		FROM dbo.T_OMS_SI_SELFPAY AS s WITH(nolock)
+			LEFT JOIN dbo.T_OMS_SI_BASE AS base WITH(nolock)
+				ON s.userCode = base.userCode
+				AND base.status = 1
+				AND base.paymentStatus = 1
+			INNER JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR AS empBase
+				ON s.userCode = empBase.userCode
+        WHERE s.status = 1
+			<isNotEmpty prepend="AND" property="paymentStatus">
+				s.paymentStatus = #paymentStatus#
+			</isNotEmpty>
+        	<isNotEmpty prepend="AND" property="changeTypeId">
+        		s.changeTypeId = #changeTypeId#
+        	</isNotEmpty>
+	</select>
+
+	<select id="exportExcel" resultClass="excelSelfPay">
+		SELECT
+	        s.userCode
+	        ,s.userName
+	        ,s.orgName
+	        ,s.paymentBase
+	        ,s.paymentMoney
+	        ,s.companyMoney
+	        ,s.personalMoney
+	        ,CAST(s.payBeginDate AS DATETIME) AS payBeginDate
+	        ,CAST(s.payEndDate AS DATETIME) AS payEndDate
+	        ,CAST(s.extraBeginDate AS DATETIME) AS extraBeginDate
+	        ,CAST(s.extraEndDate AS DATETIME) AS extraEndDate
+	        ,CONVERT(varchar(10), s.createTime, 120) AS createTime
+        FROM dbo.T_OMS_SI_SELFPAY s WITH(NOLOCK)
+        <isParameterPresent>
+            <include refid="paginateWhere" />
+        </isParameterPresent>
+	</select>
+
+    <update id="delete">
+         UPDATE dbo.T_OMS_SI_SELFPAY SET status = 0, updator = #updator#, updateTime = GETDATE()
+         WHERE id = #id#
+    </update>
+
+</sqlMap>

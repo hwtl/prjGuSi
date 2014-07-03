@@ -1,0 +1,1 @@
+v.userCode,v.joinDate,v.status,v.userName AS userNameCn,orgName,positionName,(convert(varchar(10),titleDegree)+''-''+levelDegree) AS levelFull,t.id AS interviewId

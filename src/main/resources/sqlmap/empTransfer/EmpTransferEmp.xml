@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmpTransferEmp">
+
+    <typeAlias alias="empTransferEmp" type="com.gusi.empTransfer.dto.EmpTransferEmp"/>
+
+    <select id="search" resultClass="empTransferEmp">
+        select top 10 b.userCode, b.userNameCn, o.orgName, tl.levelName, tl.levelDegree, t.titleDegree
+        ,b.orgId, tl.id as levelId, t.id as titleId ,b.positionId, b.userTitle
+        from T_OMS_EMPLOYEE_BASEINFOR b
+        left join T_OMS_ORGANIZATION o on o.id = b.orgId
+        left join T_OMS_TITLE_LEVEL tl on tl.id = b.levelId
+        left join T_OMS_TITLE t on t.id = tl.titleId
+        where (b.userCode like #keyword# + '%' or b.userNameCn like #keyword# + '%') and b.company = #company#
+        and b.positionId = 1
+        and b.status in ('正式','试用期')
+        and o.orgLongCode like '12020001/120720495%'
+        order by b.userCode
+    </select>
+
+    <select id="isChanging" resultClass="integer">
+      select count(1) from T_OMS_EMPLOYEE_CHANGE_RECORDS c where c.userCode = #userCode# and c.status = 0
+    </select>
+
+    <select id="isLeavingIn3month" resultClass="integer">
+      SELECT COUNT(b.userCode) FROM dbo.T_OMS_EMPLOYEE_BASEINFOR b WITH(NOLOCK)
+        LEFT JOIN dbo.T_OMS_ORGANIZATION o WITH(NOLOCK) ON o.id = b.orgId
+        WHERE b.userCode = #userCode#
+         AND b.status in ('正式','试用期')
+         AND b.leaveDate >= DATEADD(MONTH, -3,  GETDATE())
+         and o.status = 1
+    </select>
+
+</sqlMap>

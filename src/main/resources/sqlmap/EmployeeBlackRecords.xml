@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeBlackRecords">
+  <insert id="insertAndReturnId">
+   INSERT INTO dbo.T_OMS_EMPLOYEE_BLACK_RECORDS
+        ( serialNo ,userCode ,status ,creator ,attachId)
+   VALUES  ( #serialNo# ,#userCode# ,#status# ,#creator# ,#attachId:INTEGER# )
+  		<selectKey resultClass="int" keyProperty="id">
+            SELECT   @@IDENTITY AS id
+        </selectKey>
+  </insert>
+  <update id="updateNormalToHistory">
+     UPDATE dbo.T_OMS_EMPLOYEE_BLACK_RECORDS SET status=2,updateAt=GETDATE(),updator=#creator#
+	   WHERE userCode=#userCode# AND status=1   
+  </update>
+  <update id="updateDeactiveToInvalid">
+     UPDATE dbo.T_OMS_EMPLOYEE_BLACK_RECORDS SET status=-2,updateAt=GETDATE(),updator=#creator#
+	   WHERE userCode=#userCode# AND status=0   
+  </update>
+  
+  <update id="revocationBlackRecords">
+  	UPDATE dbo.T_OMS_EMPLOYEE_BLACK_RECORDS SET status=3,updateAt=GETDATE(),updator=#updator#,
+  	   revocation=#revocation:NVARCHAR#,guaranteeAttachId=#guaranteeAttachId:INTEGER#,operator=#operator:INTEGER#
+	   WHERE id=#id# AND status=1   
+  </update>  
+</sqlMap>

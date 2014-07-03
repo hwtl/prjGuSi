@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="ApplicationEmployeeAccess">
+     <!--添加权限 系统 -->
+    <insert id="insert">
+     INSERT INTO [T_OMS_APPLICATION_EMPLOYEE_ACCESS]
+           ([userCode]
+           ,[appId])
+     VALUES
+           (#userCode#
+           ,#appId#)
+	</insert>
+	
+	<delete id="delete">
+		delete from  T_OMS_APPLICATION_EMPLOYEE_ACCESS
+		where userCode = $userCode$
+	</delete>
+
+    <!--根据员工工号获得ta可以管理的系统编号-->
+    <select id="findApplicationEmployeeAccessByUserCode" resultClass="applicationEmployeeAccess">
+        SELECT * FROM T_OMS_APPLICATION_EMPLOYEE_ACCESS with(nolock)
+        WHERE userCode = $userCode$
+    </select>
+    
+</sqlMap>

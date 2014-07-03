@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeTag">
+
+    <typeAlias alias="employeeTag" type="com.gusi.boms.model.EmployeeTag"/>
+
+    <insert id="insert">
+        INSERT T_OMS_EMPLOYEE_TAG(userCode,tagCode,creator,createTime)
+        SELECT #userCode#, #tagCode#, #creator#, getdate()
+        WHERE NOT EXISTS (
+        SELECT 1 FROM T_OMS_EMPLOYEE_TAG WHERE userCode = #userCode# AND tagCode = #tagCode#
+        )
+    </insert>
+
+    <insert id="addBqTag">
+        INSERT T_OMS_EMPLOYEE_TAG(userCode,tagCode,creator,createTime)
+        SELECT #userCode#, '14052001', #creator#, getdate()
+        WHERE NOT EXISTS (
+        SELECT 1 FROM T_OMS_EMPLOYEE_TAG WHERE userCode = #userCode# AND tagCode = '14052001'
+        )
+    </insert>
+
+    <delete id="removeBqTag">
+        DELETE T_OMS_EMPLOYEE_TAG WHERE userCode = #userCode# AND tagCode = '14052001'
+    </delete>
+
+    <select id="queryByUserCode" resultClass="employeeTag">
+        SELECT t.userCode , t.tagCode , p.optionValue AS tagName from dbo.T_OMS_EMPLOYEE_TAG t
+        LEFT JOIN dbo.T_OMS_PARAMETER p ON t.tagCode = p.optionCode
+        WHERE p.typeKey = '140520' AND t.userCode = #userCode#
+    </select>
+
+    <delete id="delete">
+        DELETE T_OMS_EMPLOYEE_TAG WHERE userCode = #userCode#
+    </delete>
+
+    <insert id="saveEmployeeOperateHistory">
+        INSERT INTO dbo.T_OMS_EMPLOYEE_OPERATE_HISTORY(userCode, filed, remark, creator, createTime)
+        SELECT #userCode#, #title#,  #field# + '：' + p.optionValue, #creator#, GETDATE()
+        from dbo.T_OMS_EMPLOYEE_TAG T
+        LEFT JOIN dbo.T_OMS_PARAMETER p WITH(NOLOCK) ON t.tagCode = p.optionCode
+        WHERE userCode = #userCode#
+    </insert>
+
+</sqlMap>

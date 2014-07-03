@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeInterviewRecords">
+ 	
+ 	 <!-- 人事离职面谈记录 -->
+ 	<select id="findForInterview" resultClass="employeeInterviewRecords">
+ 		SELECT lr.id,lr.userCode,cr.leaveType,cr.leaveReason AS reasonString,cr.leaveDate FROM dbo.T_OMS_EMPLOYEE_INTERVIEW_RECORDS lr
+ 		INNER JOIN T_OMS_EMPLOYEE_BASEINFOR eb on lr.userCode=eb.userCode AND eb.company=#company#
+		INNER JOIN dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS cr ON lr.changeId=cr.changeId AND lr.interviewerChecked=0 AND lr.status=1 AND lr.id=#id#
+ 	</select>
+     <!-- 人事面谈 -->
+    <update id="interviewHandle">
+    	UPDATE dbo.T_OMS_EMPLOYEE_INTERVIEW_RECORDS
+ 			SET  interviewerChecked=1,interviewer=#interviewer#,updateAt=getDate() WHERE id=#id# AND STATUS=1
+    </update>
+    
+</sqlMap>

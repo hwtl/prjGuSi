@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="OrganizationEmployeeCount">
+
+    <update id="update">
+        update T_OMS_ORGNIZATION_EMPLOYEE_COUNT
+        set maxCount = #maxCount#
+          , endTime = #endTime#
+          , updator = #updator#
+          , updateTime = getdate()
+        where orgId = #orgId# and limitType = 1
+    </update>
+
+    <insert id="insert">
+        insert into T_OMS_ORGNIZATION_EMPLOYEE_COUNT
+        (orgId, maxCount, endTime,creator,limitType)
+        values
+        (#orgId#, #maxCount#, #endTime#, #creator#, #limitType#)
+    </insert>
+
+    <select id="findById" resultClass="organizationEmployeeCount">
+        select * from T_OMS_ORGNIZATION_EMPLOYEE_COUNT where orgId = #orgId#
+    </select>
+
+    <select id="isExistByOrgId" resultClass="integer">
+        select count(1) from T_OMS_ORGNIZATION_EMPLOYEE_COUNT where orgId = #orgId# and limitType = 1 and status = 1
+    </select>
+
+    <insert id="insertByOrgId">
+        INSERT INTO dbo.T_OMS_ORGNIZATION_EMPLOYEE_COUNT
+        ( orgId,maxCount,endTime,creator,createTime,limitType, branchId)
+        SELECT po.id
+        ,(SELECT COUNT(1) from dbo.T_OMS_EMPLOYEE_BASEINFOR WITH(NOLOCK) WHERE orgId = #orgId# AND status IN ('正式','试用期'))
+        ,DATEADD(DAY, 60, #orgEndTime#)
+        ,#creator#
+        ,GETDATE()
+        ,2
+        ,#orgId#
+        FROM dbo.T_OMS_ORGANIZATION po WHERE po.orgType = '区域'
+        AND (SELECT orgLongCode FROM dbo.T_OMS_ORGANIZATION WITH(NOLOCK) where id = #orgId#) LIKE po.orgLongCode + '%'
+    </insert>
+
+    <update id="updateOverdue">
+        <![CDATA[
+            update dbo.T_OMS_ORGNIZATION_EMPLOYEE_COUNT
+            SET status = 0, updator = 80001, updateTime = GETDATE()
+            where status = 1 AND limitType = 2 AND endTime <= GETDATE()
+        ]]>
+    </update>
+
+    <select id="queryStopBranchEmpNo" resultClass="organizationEmployeeCount">
+       SELECT c.orgId,c.maxCount,c.endTime,c.status,ISNULL(o.orgName,'') AS branchName
+        FROM dbo.T_OMS_ORGNIZATION_EMPLOYEE_COUNT c WITH(NOLOCK)
+        LEFT JOIN dbo.T_OMS_ORGANIZATION o ON o.id = c.branchId
+        WHERE c.orgId = #id# AND c.limitType = 2
+    </select>
+
+</sqlMap>

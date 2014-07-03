@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeLeaveReasons">
+  <insert id="insert">
+  	INSERT INTO dbo.T_OMS_EMPLOYEE_LEAVE_REASONS( interviewId , mainReasonId , mainReason ,  subReasonId ,subReason , description     )
+	VALUES  ( #interviewId:INTEGER# ,#mainReasonId:INTEGER#  , #mainReason:VARCHAR# ,  #subReasonId:INTEGER#  ,#subReason:VARCHAR# , #description:VARCHAR#        )
+  </insert>
+</sqlMap>

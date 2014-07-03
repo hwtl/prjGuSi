@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="BlogEmpArchives">
+
+    <typeAlias alias="arch" type="com.gusi.boms.dto.BlogEmpArchives"/>
+
+    <select id="findById" resultClass="arch">
+        SELECT d.userCode
+        ,CASE d.status WHEN -1 THEN 'true'  ELSE 'false' END AS showPop
+        ,CASE WHEN d.STATUS != -1 THEN ''
+              WHEN rollbackReason IS NULL or rollbackReason = '' THEN '亲，欢迎加入' + b.company + '大家庭！<![CDATA[<br/>]]>祝你在这里实现梦想，快乐工作享受生活。'
+              ELSE '亲，您的档案经人资审核后，不符合要求，请您根据要求修改！<![CDATA[<br/>]]>感谢您的配合！' END AS title
+        ,CASE WHEN d.STATUS != -1 THEN ''
+              WHEN rollbackReason IS NULL or rollbackReason = '' THEN '注意：请完善您的档案信息，完善后才能正常使用系统哦！'
+              ELSE '打回原因：' + rollbackReason END AS remark
+        FROM dbo.T_OMS_EMPLOYEE_DETAILS d WITH(NOLOCK)
+        LEFT JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR b WITH(NOLOCK) ON d.userCode = b.userCode
+        WHERE d.userCode = #userCode#
+    </select>
+
+</sqlMap>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="AppOrganization">
+
+    <select id="queryForTreeByOrgId" parameterClass="integer" resultClass="appOrganization">
+        select id, parentId, orgName
+         from T_OMS_ORGANIZATION where orgLongCode like
+          (select orgLongCode from T_OMS_ORGANIZATION where id = #id#) + '%'
+        and status in (1)
+        order by parentId, orgLevel,locIndex asc
+    </select>
+
+    <select id="findById" parameterClass="integer" resultClass="appOrganization">
+        select id, parentId, orgName
+        from T_OMS_ORGANIZATION where id = #id# and status in (1)
+    </select>
+
+</sqlMap>

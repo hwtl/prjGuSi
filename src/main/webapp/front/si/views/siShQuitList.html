@@ -1,0 +1,126 @@
+<h1 class="f18">社保管理</h1>
+
+<!-- 一级导航 begin -->
+<table width="100%" cellpadding="0" cellspacing="0" class="navTab1th">
+	<tbody>
+		<tr align="center">
+			<td ng-show="$parent.privileges.hrm_si_view" class="current" width="33%"><a href="siList">社会保险</a></td>
+			<!--<td ng-show="$parent.privileges.hrm_gjj_view" width="33%"><a href="#/borrowList">公积金</a></td>
+			<td ng-show="$parent.privileges.hrm_yw_view" width="33%"><a href="#/applyList">意外保险</a></td>-->
+		</tr>
+	</tbody>
+</table>
+<!-- 一级导航 end -->
+
+<!-- 二级导航 begin -->
+<div class="navTab2th mt_15 clearfix">
+	<a href="siList">缴纳信息</a>
+	<a href="siShNewList" class="current">上海</a>
+	<a href="siNbNewList">宁波</a>
+	<a href="siSzQuitList">深圳</a>
+</div>
+<!-- 二级导航 end -->
+
+<!-- 三级导航 begin -->
+<div class="navTab3th mt_10 clearfix">
+	<a href="siShNewList">新进</a>
+	<a href="siShQuitList" class="current">退出</a>
+	<a href="siShSelfList">自缴</a>
+</div>
+<!-- 三级导航 end -->
+
+<!-- 业务规则说明 begin -->
+<div class="boxWrapBlue pd_10 mt_15 lineH200">
+	<p class="bold">上海退出名单生成规则：</p>
+	<p>1、所有离职还在缴上海的退出</p>
+	<p class="ml_20">分两批：第一批是离职生效日期上月16日（含）至本月10日（含）例如：退出月份是5月份的名单，即4月16日至5月10日；</p>
+	<p class="ml_20">第二批是离职生效日期本月11日（含）至本月15日（含）例如：退出月份是5月份的名单，即5月11日至5月15日。</p>
+	<p>2、后台异动到前台的：在上海在缴名单里由其他非经纪人岗位变更为经纪人岗位；</p>
+	<p class="ml_20">分两批：第一批是异动生效日期上月16日（含）至本月10日（含）例如：退出月份是5月份的名单，即4月16日至5月10日；</p>
+	<p class="ml_20">第二批是异动生效日期本月11日（含）至本月15日（含）例如：退出月份是5月份的名单，即5月11日至5月15日。</p>
+	<p>3、上海自缴退出人员</p>
+	<p class="ml_20">分两批：第一批是添加自缴结束月份的更新日期是上月16日（含）至本月10日（含）例如：退出月份是5月份的名单，即4月16日至5月10日；</p>
+	<p class="ml_20">第二批是添加自缴结束月份的更新日期是本月11日（含）至本月15日（含）例如：退出月份是5月份的名单，即5月11日至5月15日</p>
+	<p class="red">如果晚点的就顺延至下一批</p>
+</div>
+<!-- 业务规则说明 end -->
+
+<!-- 搜索条件 begin -->
+<div class="boxWrapBlue pd_10 mt_15">
+	退出年月及批次：
+	<span><input type="text" class="txtDate onlyMonth" date-picker readonly="readonly" ng-model="$parent.query.paymentDate" /></span>
+	<span class="ml_10 tt160 in_block">
+		<select ng-model="query.batchId" ng-options="opt.batchId as opt.batchId for opt in batch.batchInfo" ng-show="batch && batch.batchInfo.length!=0">
+			<option value="">请选择</option>
+		</select>
+	</span>
+	
+	关键字：
+	<input type="text" class="txtNew tt160" placeholder="工号、姓名" ng-model="query.keyword" />
+	<a href="javascript:;" class="btn-small btn-blue in_block ml_20" ng-click="search(true)">查询</a>
+
+</div>
+<!-- 搜索条件 end -->
+
+<!-- 搜索结果 begin -->
+<div class="mt_15">
+	<p class="mt_15 clearfix">
+		<span class="left"><strong class="red">{{ result.totalCount }}</strong> 个符合条件的结果</span>
+		<span class="right">
+			<a href="{{exportExcel}}" class="export_excel in_block mt_2" ng-show="$parent.privileges.hrm_si_sh_operate && query.batchId">导出数据</a>
+			<span class="green in_block mt_4 ml_10" ng-show="$parent.privileges.hrm_si_sh_operate && init.confirmStatus == 1">已确认退出</span>
+			<a href="javascript:;" class="btn-small btn-silver in_block ml_10" ng-show="$parent.privileges.hrm_si_sh_operate && init.confirmStatus == 0" ng-click="confirmQuitWarning()">确认退出</a>
+		</span>
+	</p>
+	<table width="100%" cellspacing="0" class="tableListNew tableNarrow mt_10" >
+		<tr class="trHead">
+			<td>序号</td>
+			<td>工号</td>
+			<td>姓名</td>
+			<td>部门</td>
+			<td>入职日期</td>
+			<td>离职日期</td>
+			<td>身份证号码</td>
+			<td>户口所在地</td>
+		</tr>
+		<tbody ng-cloak>
+			<tr ng-repeat="item in result.resultList">
+				<td>{{ $index+1 }}&nbsp;</td>
+				<td>{{ item.userCode }}&nbsp;</td>
+				<td>{{ item.userName }}&nbsp;</td>
+				<td>{{ item.orgName }}&nbsp;</td>
+				<td>{{ item.newJoinDate | date:'yyyy-MM-dd' }}&nbsp;</td>
+				<td>{{ item.leaveDate | date:'yyyy-MM-dd' }}&nbsp;</td>
+				<td>{{ item.credentialsNo }}&nbsp;</td>
+				<td>{{ item.censusAddr }}&nbsp;</td>
+			</tr>
+			<tr ng-show="result.totalCount == 0">
+				<td colspan="8" class="center grey999">亲爱的伙伴，没有您查询的数据结果哦。</td>
+			</tr>
+			<tr ng-show="init.act.listLoading">
+				<td colspan="8" class="center"><img src="http://dui.dooioo.com/public/images/icon_ajaxload.gif" class="mh_auto disblock"></td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+<!-- 搜索结果 end -->
+
+<!-- 翻页控件 begin -->
+<div paginator record-count="result.totalCount" page-size="result.pageSize" current-page="query.pageNo"></div>
+<!-- 翻页控件 end -->
+
+<!-- begin: 确认退出警示弹层 -->
+<div class="warningPop" id="layer_confirmQuit">
+    <div class="warningT clearfix">
+        <p class="t">确认退出</p>
+    </div>
+    <div class="warningC f14 lineH200">
+        <p>是否确认<span class="red">{{ query.batchId }}</span>批次的上海社保已退出？</p>
+        <p>确认后，<b>数据不可恢复</b>！</p>
+		<p>若操作有误，<b>全部责任由操作人承担</b>！</p>
+        <p class="mt_15">
+            <a href="javascript:;" class="btn-normal btn-red in_block tt280 center" ng-click="confirmQuit()">确认退出</a>
+        </p>
+    </div>
+</div>
+<!-- end: 确认退出警示弹层 -->

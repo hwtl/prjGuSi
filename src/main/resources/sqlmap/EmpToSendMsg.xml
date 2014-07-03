@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmpToSendMsg">
+
+    <typeAlias alias="empToSendMsg" type="com.gusi.boms.dto.EmpToSendMsg"/>
+    <select id="findAreaUser" resultClass="empToSendMsg">
+        SELECT top 1 b.userCode, b.userNameCn AS userName,b.orgId,o.orgName,d.mobilePhone
+        FROM dbo.T_OMS_EMPLOYEE_BASEINFOR b
+        LEFT JOIN dbo.T_OMS_ORGANIZATION o ON o.id = b.orgId
+        LEFT JOIN dbo.T_OMS_EMPLOYEE_DETAILS d ON d.userCode = b.userCode
+        WHERE positionId = 6
+        AND o.orgLongCode = #orgLongCode#
+        AND b.status IN ('正式', '试用期')
+    </select>
+
+    <select id="findUsers" resultClass="empToSendMsg">
+        SELECT b.userCode, b.userNameCn AS userName,b.orgId,o.orgName,d.mobilePhone
+        FROM dbo.T_OMS_EMPLOYEE_BASEINFOR b
+        LEFT JOIN dbo.T_OMS_ORGANIZATION o ON o.id = b.orgId
+        LEFT JOIN dbo.T_OMS_EMPLOYEE_DETAILS d ON d.userCode = b.userCode
+        WHERE b.userCode in ($userCode$)
+    </select>
+
+    <select id="findById" resultClass="empToSendMsg">
+        select userCode, orgId from T_OMS_EMPLOYEE_BASEINFOR where userCode = #userCode#
+    </select>
+
+</sqlMap>

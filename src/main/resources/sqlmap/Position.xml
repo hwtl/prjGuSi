@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Position">
+    
+    <insert id="insertAndReturnId" parameterClass="position">
+    	INSERT INTO [dbo].[T_OMS_POSITION]
+           ([positionName]
+           ,[positionType]
+           ,[positionDesc]
+           ,[status]
+           ,[employeeCount]
+           ,[createTime]
+           ,[creator]
+           ,[ePositionName]
+           ,[titleId])
+     VALUES
+           (#positionName#
+           ,#positionType#
+           ,#positionDesc:LONGVARCHAR#
+           ,1
+           ,0
+           ,getdate()
+           ,#creator#
+           ,#ePositionName#
+           ,#titleId#
+           )
+        <selectKey resultClass="integer" keyProperty="id">
+            SELECT
+            @@IDENTITY AS id
+        </selectKey>
+    </insert>
+    
+   	<!-- 分页 -->
+	<select id="queryForPaginate2" parameterClass="vPosition" resultClass="vPosition">
+        mst_sp_pageshowex4 #columns# ,#table#,#where#,#orderBy#,#pageSize#,#pageNo#
+    </select>
+    <select id="count2" parameterClass="vPosition" resultClass="integer">
+        sp_pagecount #table#,#where#
+    </select>
+
+    <select id="findByName" parameterClass="string" resultClass="position">
+        select top 1 * from T_OMS_POSITION where positionName = #positionName#
+    </select>
+
+    <select id="findById" parameterClass="integer" resultClass="position">
+        select * from T_OMS_POSITION where id = #id#
+    </select>
+
+    <select id="findDetailsById" parameterClass="integer" resultClass="position">
+        select *  from v2_position_final where ID = #id#
+    </select>
+
+    <update id="update" parameterClass="position">
+        UPDATE [dbo].[T_OMS_POSITION]
+        SET [positionName] = #positionName#
+        ,[positionType] = #positionType#
+        ,[positionDesc] = #positionDesc#
+        ,[employeeCount] = #employeeCount#
+        ,[ePositionName] = #ePositionName#
+        ,[titleId] = #titleId#
+        WHERE id = #id#
+    </update>
+
+    <update id="baseEdit">
+        UPDATE [dbo].[T_OMS_POSITION]
+        SET [positionName] = #positionName#
+        ,[positionType] = #positionType#
+        ,[positionDesc] = #positionDesc#
+        ,[ePositionName] = #ePositionName#
+        ,[titleId] = #titleId#
+        ,updator = #updator#
+        ,updateTime = getDate()
+        WHERE id = #id#
+    </update>
+
+    <select id="findByNameAndTitleId" parameterClass="position" resultClass="position">
+        select top 1 * from T_OMS_POSITION where positionName = #positionName# and titleId = #titleId#
+    </select>
+
+    <update id="close">
+        update T_OMS_POSITION
+        set status = 0
+        ,updator = #updator#
+        ,updateTime = getDate()
+        where id = #id#
+    </update>
+
+    <update id="open">
+        update T_OMS_POSITION
+        set status = 1
+        ,updator = #updator#
+        ,updateTime = getDate()
+        where id = #id#
+    </update>
+
+    <select id="queryPositionByTitleId" parameterClass="integer" resultClass="select">
+		select id as key ,positionName as value from T_OMS_POSITION where titleId = #titleId#
+    </select>
+</sqlMap>

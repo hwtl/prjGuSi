@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="OrganizationName">
+
+	<insert id="insert" parameterClass="organizationName">
+		INSERT INTO
+		[dbo].[T_OMS_ORGANIZATION_NAME]
+		([orgId]
+      	,[py])
+		VALUES
+		(#orgId#
+		,dbo.fun_getPY(#py#)
+		)
+	</insert>
+    <update id="update" parameterClass="organizationName">
+        UPDATE T_OMS_ORGANIZATION_NAME set py = dbo.fun_getPY(#py#)
+        where orgId = #orgId#
+    </update>
+	<select id="findById" parameterClass="integer" resultClass="organizationName">
+		SELECT 
+		[orgId]
+      	,[py]
+  		FROM 
+  		[dbo].[T_OMS_ORGANIZATION_NAME]
+  		WHERE
+  		orgId = #orgId#
+	</select>
+
+</sqlMap>

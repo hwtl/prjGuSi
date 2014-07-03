@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="AppEmployee">
+
+    <select id="queryForTreeByOrgId" parameterClass="integer" resultClass="appEmployee">
+         select userCode, orgId,userName AS userNameCn, sex, mobilePhone, orgName, positionName
+         from v2_employee_final
+         where orgId in (
+                select id from T_OMS_ORGANIZATION where orgLongCode like
+                (select orgLongCode from T_OMS_ORGANIZATION where id = #id#) + '%'
+                and status in (1)
+            )
+            and status in ('正式','试用期')
+    </select>
+
+   <!-- 根据公司查找在职员工 -->
+   <select id="findEmployeesWithCompany" resultClass="vAppEmployee">
+     select e.userCode,e.userName AS userNameCn,e.titleName AS userTitle,e.orgClass,
+       e.sex, e.mobilePhone,e.alternatePhone,e.showedPhone,
+       case e.orgType when '分行' then po.orgName
+           else o.orgName end as orgName,
+           case e.orgType when '分行' then po.id
+           else o.id end as orgId,e.positionName,
+      e.joinDate,e.latestJoinDate,o.address AS orgAdress
+         from v2_employee_final e with(nolock) INNER JOIN t_oms_organization o with(nolock)
+			 ON o.id=e.orgId  AND e.status IN ('正式','试用期')  and e.company=#company#
+			 <isNotEmpty property="userCodes">
+			  and e.userCode in ($userCodes$) 
+			 </isNotEmpty>
+          INNER JOIN dbo.T_OMS_ORGANIZATION po with(nolock) ON po.id=o.parentId
+   </select>
+
+   <!-- 根据员工档案信息更新时间查找员工 -->
+   <select id="findEmployeesByUpdateTime" resultClass="vAppEmployee">
+     select e.userCode,e.userName AS userNameCn,e.titleName AS userTitle,e.orgClass,
+       e.sex, e.mobilePhone,e.alternatePhone,e.showedPhone,
+       case e.orgType when '分行' then po.orgName
+           else o.orgName end as orgName,
+           case e.orgType when '分行' then po.id
+           else o.id end as orgId,e.positionName,
+           e.status,
+      e.joinDate,e.latestJoinDate,o.address AS orgAdress
+         from v2_employee_final e with(nolock) INNER JOIN t_oms_organization o with(nolock)
+			 ON o.id=e.orgId  AND e.status IN ('正式','试用期', '离职')  and e.company=#company#
+          INNER JOIN dbo.T_OMS_ORGANIZATION po with(nolock) ON po.id=o.parentId
+          INNER JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR as emp with(nolock) on e.userCode = emp.userCode
+          where emp.updateTime between #startTime# and #endTime#
+   </select>
+</sqlMap>

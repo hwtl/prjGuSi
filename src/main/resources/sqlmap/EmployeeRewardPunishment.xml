@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeRewardPunishment">
+
+    <insert id="insertAndReturnId" parameterClass="employeeRewardPunishment">
+        INSERT INTO [dbo].[T_OMS_EMPLOYEE_REWARD_PUNISHMENT]
+        ([userCode]
+        ,[rewardtype]
+        ,[channel]
+        ,[result]
+        ,[effectiveTime]
+        ,[effectiveLength]
+        ,[rules]
+        ,[remark]
+        ,[status]
+        ,[creator]
+        ,[createTime]
+        )
+        VALUES
+        (#userCode#
+        ,#rewardtype#
+        ,#channel#
+        ,#result#
+        ,#effectiveTime#
+        ,#effectiveLength#
+        ,#rules#
+        ,#remark#
+        ,#status#
+        ,#creator#
+        ,getdate()
+        )
+        <selectKey resultClass="integer" keyProperty="id">
+            SELECT
+            @@IDENTITY AS id
+        </selectKey>
+    </insert>
+
+    <update id="update" parameterClass="employeeRewardPunishment">
+        UPDATE [dbo].[T_OMS_EMPLOYEE_REWARD_PUNISHMENT]
+        SET
+         [rewardtype] = #rewardtype#
+        ,[channel] = #channel:VARCHAR#
+        ,[result] = #result#
+        ,[effectiveTime] = #effectiveTime#
+        ,[effectiveLength] = #effectiveLength#
+        ,[rules] = #rules#
+        ,[remark] = #remark#
+        ,[status]=#status#
+        ,[updator] = #updator#
+        ,[updateTime] = getdate()
+        WHERE id = #id# and status=0
+    </update>
+
+    <update id="deleteById" parameterClass="integer">
+      UPDATE [dbo].[T_OMS_EMPLOYEE_REWARD_PUNISHMENT]
+        SET
+         [status] = 9
+        WHERE id = #id# and status=0
+    </update>
+
+   <!-- 更新成生效记录 -->
+    <update id="changeNormal">
+    UPDATE [dbo].[T_OMS_EMPLOYEE_REWARD_PUNISHMENT]
+        SET     [status] = 1
+        WHERE id = #id# and status=0 and getDate()> effectiveTime 
+    </update>
+    
+    <select id="queryForActiveJobs" resultClass="employeeRewardPunishment">
+    	 SELECT te.[id]
+              ,te.[userCode]
+              ,te.[rewardtype]
+              ,te.[channel]
+              ,te.[result]
+              ,te.[effectiveTime]
+              ,te.[effectiveLength]
+              ,te.[rules]
+              ,te.[remark]
+              ,te.[status]
+          FROM [dbo].[T_OMS_EMPLOYEE_REWARD_PUNISHMENT] te
+          WHERE te.status=0 and getDate()> te.effectiveTime 
+    </select>
+
+    <select id="findById" parameterClass="integer" resultClass="employeeRewardPunishment">
+       SELECT te.[id]
+              ,te.[userCode]
+              ,te.[rewardtype]
+              ,te.[channel]
+              ,te.[result]
+              ,te.[effectiveTime]
+              ,te.[effectiveLength]
+              ,te.[rules]
+              ,te.[remark]
+              ,te.[status]
+              ,te.[creator]
+              ,te.[createTime]
+              ,te.[updator]
+              ,te.[updateTime]
+              ,eb.userNameCn AS userName
+          FROM [dbo].[T_OMS_EMPLOYEE_REWARD_PUNISHMENT] te
+           INNER JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR eb ON te.userCode=eb.userCode
+          WHERE te.id = #id#
+    </select>
+     <select id="findViewById" parameterClass="integer" resultClass="vemployeeRewardPunishment">
+       SELECT * FROM v2_reward_final WHERE id = #id#
+    </select>
+    
+     <select id="findViewForEdit" parameterClass="integer" resultClass="vemployeeRewardPunishment">
+       SELECT * FROM v2_reward_final WHERE id = #id# and status=0
+    </select>
+
+    <select id="queryForListByUserCode" resultClass="vemployeeRewardPunishment" parameterClass="integer">
+        select *
+        from [v2_reward_final]
+         where userCode = #userCode# and status=1
+         order by effectiveTime desc
+    </select>
+
+    <!-- 分页 -->
+    <select id="queryForPaginate2" parameterClass="employeeRewardPunishment" resultClass="vemployeeRewardPunishment">
+        mst_sp_pageshowex4 '$columns$ ','$table$','$where$','$orderBy$',$pageSize$,$pageNo$
+    </select>
+    <select id="count2" parameterClass="employeeRewardPunishment" resultClass="integer">
+        sp_pagecount '$table$','$where$'
+    </select>
+
+</sqlMap>

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="AccountingDepartment">
+	     <!--添加核算部门 -->
+    <insert id="insertAndReturnId">
+        INSERT INTO T_OMS_ACCOUNTING_DEPARTMENT
+        (orgId,orgName,creator,createTime,manager,startTime,endTime,orgType, 
+        	orgLongCode, parentId,orgLevel,locIndex,orgCode) 
+        SELECT #orgId#,#orgName#,#creator#,getdate(),#manager:INTEGER#,#startTime#,#endTime:INTEGER#,
+        		orgType,orgLongCode,parentId,orgLevel,locIndex,orgCode FROM  dbo.T_OMS_ORGANIZATION with (nolock) WHERE ID= #orgId#
+       	<selectKey resultClass="integer" keyProperty="id">
+			SELECT	@@IDENTITY AS id
+		</selectKey>
+    </insert>
+
+     <!-- 初始化新增核算组织的job -->
+     <select id="findForAddAccountDeptJob" resultClass="accountingDepartment">
+     	select b.ID AS orgId,b.orgName,eb.userNameCn AS managerName,80001 as creator,
+     	isnull(b.openDate, b.createTime) AS startTime ,b.manager,b.orgType,b.parentId
+	   from T_OMS_ORGANIZATION  as b with(nolock) 
+	   LEFT JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR eb with(nolock) ON b.manager=eb.userCode
+	   where b.STATUS='1' AND (
+								b.orgType IN ('部门','门店','区域') 
+								OR (b.manager IS NOT NULL AND b.orgType IN ('分行'))
+							) 
+	    AND  not EXISTS
+	        (select 1 from dbo.v_accountingDepartment_all with(nolock) where orgId = b.ID)
+     </select>
+     
+     
+     <!-- 生成空组 -->
+     <insert id="insertEmpty">
+        INSERT INTO T_OMS_ACCOUNTING_DEPARTMENT
+        (orgId,orgName,creator,createTime,status,manager,startTime,endTime,orgType, 
+        	orgLongCode, parentId,orgLevel,locIndex,orgCode) 
+        SELECT id,orgName,80001,getdate(),2,null,#startTime#,#endTime#,
+        		orgType,orgLongCode,parentId,orgLevel,locIndex,orgCode FROM  dbo.T_OMS_ORGANIZATION with (nolock) WHERE ID= #orgId#
+        <selectKey resultClass="integer" keyProperty="id">
+			SELECT	@@IDENTITY AS id
+		</selectKey>
+    </insert>
+    <!-- 根据门店ID找所有空组 -->
+    <select id="findEmptyOrgsByStoreId" resultClass="accountingDepartment">
+     SELECT t.id,t.orgName,t.orgType,t.orgId FROM (
+	SELECT ROW_NUMBER() OVER (PARTITION BY ad.orgId ORDER BY ad.id DESC) AS rid,ad.id,ad.orgName,ad.orgType,ad.orgId AS orgId  FROM
+	T_OMS_Accounting_Department ad  WHERE  ad.status=2 AND ad.parentId=#storeId#) AS t WHERE t.rid=1
+    </select>
+    
+    <!--检查是否存在相同的核算部门信息-->
+    <select id="existSameDepartment" resultClass="int">
+        SELECT count(1) FROM T_OMS_ACCOUNTING_DEPARTMENT WHERE orgId = #orgId# AND orgName = #orgName#
+    </select>
+    <!-- 根据组织查找所有转调记录 -->
+    <select id="findDepartmentsByOrgId" resultClass="accountingDepartment">
+    	SELECT d.*,eb.userNameCn AS creatorName,em.userNameCn AS managerName FROM dbo.T_OMS_Accounting_Department d
+ 		LEFT JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR eb ON d.creator=eb.userCode
+		LEFT JOIN T_OMS_EMPLOYEE_BASEINFOR em ON d.manager=em.userCode
+		WHERE d.orgId=#orgId# AND d.status in (1,2) order by startTime
+    </select> 
+    <!-- 更新核算部门 -->
+    <update id="update">
+    	 update T_OMS_Accounting_Department
+    	      SET createTime=createTime
+    	 	<dynamic>
+    	 		 <isNotEqual compareValue="0" property="orgId">
+    	 		 	  ,orgId = #orgId#
+    	 		 </isNotEqual>
+    	 		 <isNotEmpty property="orgName">
+    	 		 	 ,orgName=#orgName#
+    	 		 </isNotEmpty>
+    	 		 <isNotNull property="startTime">
+    	 		 	,startTime=#startTime#
+    	 		 </isNotNull>
+    	 		 <isNotNull property="endTime">
+    	 		    ,endTime=#endTime#
+    	 		 </isNotNull>
+    	 		 <isNotNull property="manager">
+    	 		 	,manager=#manager#
+    	 		 </isNotNull>
+    	 	</dynamic>
+		    where id = #id#
+    </update>
+    <!-- 更新endTIme -->
+    <update id="updateEndTime" >
+    	UPDATE  T_OMS_Accounting_Department SET endTime=#endTime# WHERE id=#id#
+    </update>
+    <select id="findLatestAccountingId" resultClass="integer">
+    	 select id from T_OMS_Accounting_Department with(nolock)  WHERE orgId=#orgId# AND endTime is null
+    </select>
+    
+    <!-- 校验之前必须先校验startTime 是否小于最大的开始时间，这种情况下，需要endTime -->
+    <select id="canAddAccountingDept" resultClass="integer">
+      SELECT count(*) FROM dbo.T_OMS_Accounting_Department ad WHERE orgId=#orgId# AND
+		(
+		   (#startTime# BETWEEN ad.startTime AND ad.endTime)
+		  <isNotEmpty property="endTime">
+		   OR ( #endTime# BETWEEN ad.startTime AND ad.endTime)
+		   OR (ad.startTime >= #startTime# AND
+		  	 ( #endTime# >= ad.endTime OR #endTime# >= ad.startTime)
+		   )
+		  </isNotEmpty>
+		)
+           
+    </select>
+    
+    <!-- 查找指定orgId的最大startTime -->
+    <select id="findMaxStartTime" resultClass="accountingDepartment">
+	   	SELECT TOP 1 ISNULL(endTime,startTime) as startTime FROM 
+	   	dbo.T_OMS_Accounting_Department WHERE  orgId=#orgId# ORDER BY startTime DESC
+    </select>
+    <select id="findForAdd" resultClass="accountingDepartment">
+     SELECT TOP 1 o.Id AS orgId,o.orgName+(ISNULL('('+h.userNameCn+')',''))  AS orgName FROM T_OMS_ORGANIZATION o
+		  LEFT JOIN T_OMS_ORGANIZATION_HEADER_HISTORY h  ON h.orgId=o.id AND h.status ='正常'
+		  WHERE o.id=#orgId#
+    </select>
+    
+       <!-- 查找负责人 -->
+    <select id="findPrincipals" resultClass="accountingDepartment">
+    	 SELECT eb.userCode as manager,eb.userNameCn as managerName FROM dbo.T_OMS_EMPLOYEE_BASEINFOR eb
+		 INNER JOIN (
+	 				SELECT DISTINCT(userCode) FROM dbo.T_OMS_ORGANIZATION_HEADER_HISTORY 
+	 				WHERE orgId=#orgId#
+	 				    <dynamic>
+	 				    	<isNotNull property="startTime">
+	 				    		<isNull property="endTime">
+	 				    			 AND ((endTime IS NULL AND #startTime# >=startTime) OR ( endTime > #startTime#))
+	 				    		</isNull>
+	 				    		 <isNotNull property="endTime">
+	 				    		 AND ( (endTime IS NULL AND #startTime# >=startTime )
+ 						  	 	 OR 
+ 						  	 		(
+ 						  	 		  (#startTime# BETWEEN startTime AND endTime) OR
+ 						  	 		  (#endTime# BETWEEN startTime AND endTime) OR 
+ 						  	 		  (startTime >=#startTime# AND #endTime# > endTime)
+ 						  	 		))
+	 				    		 </isNotNull>	 				    		
+	 				    	</isNotNull>
+	 				    </dynamic>
+	 				) AS  t
+	 ON t.userCode=eb.userCode
+    </select>
+    
+    <!-- 金蝶客户 -->
+    <typeAlias alias="customer" type="com.gusi.boms.model.EASCustomer"/>
+    <!-- 分页 -->
+	<select id="queryForPaginate"  resultClass="customer">
+        mst_sp_pageshowex4 '$columns$ ','$table$','$where$','$orderBy$',$pageSize$,$pageNo$
+    </select>
+    <select id="count" resultClass="integer">
+        sp_pagecount '$table$','$where$'
+    </select>
+    <select id="findByCustomer" resultClass="customer">
+    	SELECT ec.id,de.id AS customer,de.orgName,ec.customerEASCode,ec.remark FROM oms..v_accountingDepartment_all de		 
+		 LEFT JOIN dbo.T_EAS_Customer ec ON de.id=ec.customer 
+		 WHERE de.id=#customer#  AND de.company= #company#   	
+    </select>
+    
+    <select id="findEASCustomers" resultClass="customer">
+    SELECT TOP 25 FName_L2 AS remark,FNumber AS customerEASCode FROM dbo.T_BD_Customer WHERE FName_L2 LIKE '%$remark$%'
+    </select>
+    <!-- 新增客户对应关系 -->
+    <insert id="insertRelation">
+	    INSERT INTO dbo.T_EAS_Customer
+	         ( customer ,
+	           customerEASCode ,
+	           remark
+	         )
+		 VALUES  ( #customer# ,
+		           #customerEASCode#,
+		           #remark:VARCHAR#
+		         )
+    </insert>
+    <insert id="insertLog">
+    	INSERT INTO [T_EAS_Customer_Log]
+           ([customer]
+           ,[customerEASCode]
+           ,[remark]
+           ,[operator]
+          )
+     VALUES
+           (#customer:VARCHAR#
+           ,#customerEASCode:VARCHAR#
+           ,#remark:NVARCHAR#
+           ,#operator#)
+    </insert>
+    <!-- 更新客户对应关系 -->
+    <update id="updateRelation">
+			 UPDATE dbo.T_EAS_Customer SET customerEASCode=#customerEASCode#,remark=#remark:VARCHAR# WHERE id=#id#
+    </update>
+    
+    <select id="findByEASCustomerCode" resultClass="customer">
+    	SELECT de.id AS customer,de.orgName,ec.customerEASCode,ec.remark,de.company FROM oms..v_accountingDepartment_all de		
+		 LEFT JOIN dbo.T_EAS_Customer ec ON de.id=ec.customer 
+		 WHERE ec.customerEASCode=#customerEASCode#  AND de.company= #company#       
+    </select>
+    
+    <select id="findLatestOrgId" resultClass="accountingDepartment" parameterClass="integer">
+        select top 1 * from T_OMS_Accounting_Department where orgId = #orgId#
+        and endTime IS null order by createTime desc
+    </select>
+    
+</sqlMap>

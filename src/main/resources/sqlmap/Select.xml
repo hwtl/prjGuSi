@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Select">
+
+    <select id="queryTitlesBySerialId" resultClass="select" parameterClass="integer">
+        SELECT id as [key] , titleDegree as value , titleName as expand
+        FROM T_OMS_TITLE
+        where status = 1 and serialId = #serialId#
+        order by titleDegree
+    </select>
+
+    <select id="queryPositionByTitleId"  resultClass="select" parameterClass="integer">
+		select distinct positionName as value,p.id as [key]
+		from T_OMS_POSITION p
+        left join T_OMS_POSITION_TITLE t on p.id = t.positionId
+        where (t.titleId = #titleId# or p.titleId = #titleId#) and p.status = 1
+    </select>
+
+    <select id="queryTitleLevelByTitleId" resultClass="select" parameterClass="integer">
+         SELECT l.id as [key] ,levelDegree as value,l.levelName as expand
+         FROM T_OMS_TITLE_LEVEL l
+         left join T_OMS_TITLE t on l.titleId= t.id and t.status = 1
+         WHERE t.id =  #titleId# and l.status = 1
+    </select>
+</sqlMap>

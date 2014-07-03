@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Parameter">
+   <cacheModel type="MEMORY" id="parameterCache">
+   		<property name="reference-type" value="SOFT"/>
+   		<flushInterval hours="3"/>
+   </cacheModel>
+   <!-- typeKey返回对象 -->
+    <select id="findByTypeKey" parameterClass="string" resultClass="parameter" cacheModel="parameterCache">
+		SELECT
+		 optionCode ,  optionValue
+		FROM T_OMS_PARAMETER
+		WHERE status=0  AND typeKey = #typeKey#
+		ORDER BY SORT
+	</select>
+   <!-- typeKey返回MAP -->
+   <select id="findMapByTypeKey" resultClass="hashmap" >
+   	 select optionCode,optionValue FROM dbo.T_OMS_PARAMETER 
+   		 where status=0  and typeKey=#typeKey# 
+   	 order by sort
+   </select>
+   
+   <!-- 民族 -->
+   <select id="findNations" resultClass="hashMap" cacheModel="parameterCache">
+   	 select optionCode,optionValue FROM dbo.T_OMS_PARAMETER 
+   		 where status=0  and typeKey=#typeKey# 
+   	 order by sort
+   </select>
+   <!-- 学位 -->
+    <select id="findEducationDegrees"  resultClass="hashMap" cacheModel="parameterCache">
+   	 select optionCode,optionValue FROM dbo.T_OMS_PARAMETER 
+   		 where status=0  and typeKey=#typeKey# 
+   	 order by sort
+   </select>
+   <!-- 学习类型 -->
+    <select id="findStudyType"  resultClass="hashMap" cacheModel="parameterCache">
+   	 select optionCode,optionValue FROM dbo.T_OMS_PARAMETER
+   		 where status=0  and typeKey=#typeKey#
+   	 order by sort
+   </select>
+   <!-- 星座 -->
+    <select id="findConstellations"  resultClass="hashMap" cacheModel="parameterCache">
+   	 select optionCode,optionValue FROM dbo.T_OMS_PARAMETER 
+   		 where status=0  and typeKey=#typeKey# 
+   	 order by sort
+   </select> 
+    <!-- 省份 -->
+    <select id="findProvinces"  resultClass="hashMap" cacheModel="parameterCache">
+   	 select optionCode,optionValue FROM dbo.T_OMS_PARAMETER 
+   		 where status=0  and typeKey=#typeKey# 
+   	 order by sort
+   </select>  
+   <!-- 血型 --> 
+   <select id="findBloodTypes" resultClass="hashMap" cacheModel="parameterCache">
+      	 select optionCode,optionValue FROM dbo.T_OMS_PARAMETER 
+   		 where status=0  and typeKey=#typeKey# 
+   	 order by sort
+   </select>
+   <!-- 婚姻状态 -->
+   <select id="findMarriages" resultClass="hashMap"  cacheModel="parameterCache">
+   	 select optionCode,optionValue FROM dbo.T_OMS_PARAMETER 
+   		 where status=0  and typeKey=#typeKey# 
+   	 order by sort
+   </select>
+   <!-- 政治背景 -->
+   <select id="findPoliticalBackgrounds" resultClass="hashMap"  cacheModel="parameterCache">
+   	 select optionCode,optionValue FROM dbo.T_OMS_PARAMETER 
+   		 where status=0  and typeKey=#typeKey# 
+   	 order by sort
+   </select>
+   
+   <select id="findByOptionCode" resultClass="parameter">
+   		select optionCode,optionValue FROM dbo.T_OMS_PARAMETER 
+   		 where optionCode=#optionCode# 
+   </select>   
+   
+   <select id="query" resultClass="parameter">
+        SELECT * FROM dbo.T_OMS_PARAMETER
+    </select>
+    
+        
+
+   
+</sqlMap>

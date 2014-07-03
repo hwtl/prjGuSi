@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="SIChangeDetail">
+
+    <typeAlias alias="siChangeDetail" type="com.gusi.socialInsurance.model.SIChangeDetail"/>
+
+    <select id="querySIChangeDetailList" resultClass="siChangeDetail">
+        SELECT new.userCode
+            ,new.credentialsNo
+            ,old.status AS oldStatus,new.status AS newStatus
+            ,new.newJoinDate,new.leaveDate
+            ,old.orgId AS oldOrgId,new.orgId AS newOrgId
+            ,old.positionId AS oldPositionId,new.positionId AS newPositionId
+            ,old.levelId AS oldLevelId,new.levelId AS newLevelId
+            ,old.serialId AS oldSerialId, new.serialId AS newSerialId
+            ,old.titleDegree AS oldTitleDegree, new.titleDegree AS newTitleDegree
+            ,old.levelDegree AS oldLevelDegree, new.levelDegree AS newLevelDegree
+            ,old.censusId AS oldCensusId, new.censusId AS newCensusId
+            ,old.contractType AS oldContractType,new.contractType AS newContractType
+            ,convert(datetime,old.contractStartTime, 120) AS oldContractStartTime
+            ,convert(datetime,new.contractStartTime, 120) AS newContractStartTime
+            ,convert(datetime,old.contractEndTime, 120) AS oldContractEndTime
+            ,convert(datetime,new.contractEndTime, 120) AS newContractEndTime
+            ,CASE WHEN sb.userCode IS NOT NULL THEN sb.paymentStatus ELSE 0 END AS paymentStatus
+            ,CASE WHEN sb.userCode IS NOT NULL THEN sb.paymentLocationId ELSE 0 END AS paymentLocationId
+        FROM dbo.T_OMS_SI_EMPLOYEE new WITH(NOLOCK)
+        LEFT JOIN dbo.T_OMS_SI_BASE sb WITH(NOLOCK) ON sb.userCode = new.userCode AND sb.paymentStatus = 1
+        LEFT JOIN
+            (SELECT userCode
+                    ,status
+                    ,orgId
+                    ,positionId
+                    ,levelId
+                    ,serialId
+                    ,titleDegree
+                    ,levelDegree
+                    ,censusId
+                    ,contractType
+                    ,contractStartTime
+                    ,contractEndTime
+                    ,newJoinDate
+                    ,leaveDate
+                    FROM T_OMS_SI_EMPLOYEE WITH(NOLOCK)
+            WHERE batchId = #previousBatchId#) AS old ON new.userCode = old.userCode
+        WHERE new.batchId = #batchId#
+            AND (
+                old.userCode IS NULL
+                OR new.status <![CDATA[ <> ]]> old.status
+                OR new.newJoinDate <![CDATA[ <> ]]> old.newJoinDate
+                OR new.leaveDate <![CDATA[ <> ]]> old.leaveDate
+                OR new.orgId <![CDATA[ <> ]]> old.orgId
+                OR new.positionId <![CDATA[ <> ]]> old.positionId
+                OR new.levelId <![CDATA[ <> ]]> old.levelId
+                OR new.censusId <![CDATA[ <> ]]> old.censusId
+                OR new.contractType <![CDATA[ <> ]]> old.contractType
+                OR new.contractStartTime <![CDATA[ <> ]]> old.contractStartTime
+                OR new.contractEndTime <![CDATA[ <> ]]> old.contractEndTime
+            )
+    </select>
+
+    <update id="copyDataToHistory">
+            INSERT INTO dbo.T_OMS_SI_EMPLOYEE_HISTORY
+                    ( id,
+                      batchId ,
+                      userCode ,
+                      credentialsNo ,
+                      status ,
+                      newJoinDate ,
+                      leaveDate ,
+                      orgId ,
+                      positionId ,
+                      levelId ,
+                      serialId,
+                      titleDegree,
+                      levelDegree,
+                      censusId ,
+                      contractType ,
+                      contractStartTime ,
+                      contractEndTime ,
+                      createTime ,
+                      createYear ,
+                      createMonth ,
+                      createDay ,
+                      creator
+                    )
+            SELECT    id,
+                      batchId ,
+                      userCode ,
+                      credentialsNo ,
+                      status ,
+                      newJoinDate ,
+                      leaveDate ,
+                      orgId ,
+                      positionId ,
+                      levelId ,
+                      serialId,
+                      titleDegree,
+                      levelDegree,
+                      censusId ,
+                      contractType ,
+                      contractStartTime ,
+                      contractEndTime ,
+                      createTime ,
+                      createYear ,
+                      createMonth ,
+                      createDay ,
+                      creator
+                    FROM dbo.T_OMS_SI_EMPLOYEE WITH(nolock) WHERE batchId = #batchId#
+    </update>
+
+    <update id="copyDataToNow">
+            INSERT INTO dbo.T_OMS_SI_EMPLOYEE
+                    (
+                      batchId ,
+                      userCode ,
+                      credentialsNo ,
+                      status ,
+                      newJoinDate ,
+                      leaveDate ,
+                      orgId ,
+                      positionId ,
+                      levelId ,
+                      serialId,
+                      titleDegree,
+                      levelDegree,
+                      censusId ,
+                      contractType ,
+                      contractStartTime ,
+                      contractEndTime ,
+                      createTime ,
+                      createYear ,
+                      createMonth ,
+                      createDay ,
+                      creator
+                    )
+            SELECT
+                      batchId ,
+                      userCode ,
+                      credentialsNo ,
+                      status ,
+                      newJoinDate ,
+                      leaveDate ,
+                      orgId ,
+                      positionId ,
+                      levelId ,
+                      serialId,
+                      titleDegree,
+                      levelDegree,
+                      censusId ,
+                      contractType ,
+                      contractStartTime ,
+                      contractEndTime ,
+                      createTime ,
+                      createYear ,
+                      createMonth ,
+                      createDay ,
+                      creator
+                    FROM dbo.T_OMS_SI_EMPLOYEE_HISTORY WITH(nolock)
+                    WHERE batchId = #batchId#
+    </update>
+
+    <delete id="deleteData">
+        DELETE FROM dbo.T_OMS_SI_EMPLOYEE WHERE batchId = #batchId#
+    </delete>
+
+    <select id="queryForLeaveReturn" resultClass="siChangeDetail">
+        SELECT esb.userCode, esb.credentialsNo
+            ,esb.status AS newStatus
+            ,esb.positionId as newPositionId
+            ,CASE WHEN sb.userCode IS NOT NULL THEN sb.paymentStatus ELSE 0 END AS paymentStatus
+            ,CASE WHEN sb.userCode IS NOT NULL THEN sb.paymentLocationId ELSE 0 END AS paymentLocationId
+            ,esb.contractType AS newContractType
+        FROM (
+            SELECT RS.userCode, LEFT(cts,LEN(cts)-1) AS changeTypes FROM (
+                SELECT ECR.userCode ,
+                    (SELECT changeType + ',' FROM dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS r WITH(NOLOCK)
+                    WHERE r.userCode = ECR.userCode
+                    AND (r.activeDate BETWEEN #lastPaymentDate# AND #paymentDate#)
+                    AND r.changeType IN ('离职', '回聘')
+                    AND r.status = 1
+                    ORDER BY r.activeDate
+                    FOR XML PATH('')) AS cts
+                FROM dbo.T_OMS_EMPLOYEE_CONTRACT_RECORDS ECR WITH(NOLOCK)
+                GROUP BY ECR.userCode
+            ) RS) AS T
+        LEFT JOIN dbo.T_OMS_SI_BASE sb WITH(NOLOCK) ON sb.userCode = T.userCode AND sb.paymentStatus = 1
+        LEFT JOIN v2_employee_si_base esb WITH(NOLOCK) ON esb.userCode = T.userCode
+        WHERE esb.userCode IS NOT NULL
+        AND PATINDEX('%离职%', T.changeTypes) = 1
+        AND PATINDEX('%聘回%', REVERSE(T.changeTypes)) = 1
+    </select>
+
+</sqlMap>

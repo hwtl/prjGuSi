@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="OrganizationOrgCount">
+
+    <typeAlias alias="orgCount" type="com.gusi.boms.model.OrganizationOrgCount"/>
+
+    <update id="update">
+        update T_OMS_ORGANIZATION_ORG_COUNT
+        set maxCount = #maxCount#
+          , updator = #updator#
+          , updateTime = getdate()
+        where orgId = #orgId#
+    </update>
+
+    <insert id="insert">
+        insert into T_OMS_ORGANIZATION_ORG_COUNT
+        (orgId, maxCount,creator,createTime)
+        values
+        (#orgId#, #maxCount#,#creator#,getdate())
+    </insert>
+
+    <select id="findById" resultClass="orgCount">
+        select orgId, maxCount from T_OMS_ORGANIZATION_ORG_COUNT where orgId = #orgId#
+    </select>
+
+    <select id="isExistByOrgId" resultClass="integer">
+        select count(1) from T_OMS_ORGANIZATION_ORG_COUNT where orgId = #orgId#
+    </select>
+
+    <delete id="delete">
+        delete T_OMS_ORGANIZATION_ORG_COUNT where orgId = #orgId#
+    </delete>
+
+</sqlMap>

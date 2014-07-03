@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="ApplicationLog">
+    <insert id="insert">
+        INSERT INTO [T_OMS_APPLICATION_LOG]
+        (
+         [appId]
+        ,[applicationName]
+        ,[applicationCode]
+        ,[status]
+        ,[creator]
+        ,[operateType]
+        )
+        select
+        id,applicationName,applicationCode,status,#creator#,#operateType#
+        from T_OMS_APPLICATION where id = #appId#
+    </insert>
+
+</sqlMap>

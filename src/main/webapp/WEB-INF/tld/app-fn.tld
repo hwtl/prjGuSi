@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+        version="2.0">
+    <description>DY JSTL 1.0 functions library</description>
+    <display-name>DY JSTL functions</display-name>
+    <tlib-version>1.0</tlib-version>
+    <short-name>fn</short-name>
+
+    <function>
+        <name>formatUrl</name>
+        <function-class>com.gusi.empTransfer.jstl.UrlJstl</function-class>
+        <function-signature>java.lang.String formatUrl(java.lang.String,java.lang.String,java.lang.String)</function-signature>
+    </function>
+
+</taglib>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeePosition">
+
+    <insert id="insert" parameterClass="employeePosition">
+        INSERT INTO [dbo].[T_OMS_EMPLOYEE_POSITION]
+        (
+         [userCode]
+        ,[positionId]
+        ,[orgId]
+        ,[partTime])
+        VALUES
+        (
+         $userCode$
+        ,$positionId$
+        ,$orgId$
+        ,$partTime$
+        )
+    </insert>
+    <update id="update">
+      UPDATE [oms].[dbo].[T_OMS_EMPLOYEE_POSITION]
+      SET
+      [positionId] = $positionId$
+      ,[orgId] = $orgId$
+     WHERE userCode = $userCode$ and parttime = 0
+
+    </update>
+
+    <!-- 删除所有职位信息 -->
+    <delete id="deleteAllByUserCode">
+    	DELETE FROM dbo.T_OMS_EMPLOYEE_POSITION
+				 WHERE userCode=#userCode#
+    </delete>
+    <!-- 删除兼职中已有的职位 -->
+	<delete id="deleteSamePosition">
+		DELETE FROM dbo.T_OMS_EMPLOYEE_POSITION
+				 WHERE userCode=#userCode# AND positionId=#positionId# AND orgId=#orgId#
+				  AND partTime=1
+	</delete>
+	<!-- 更换主要职位 -->
+    <update id="changePrimaryPosition">
+   	 UPDATE dbo.T_OMS_EMPLOYEE_POSITION
+	 SET positionId=#positionId#,orgId=#orgId#
+	 	WHERE userCode=#userCode# AND partTime=0
+    </update>
+
+    <select id="countByEntity" parameterClass="employeePosition" resultClass="Integer">
+        select count(1) from [dbo].[T_OMS_EMPLOYEE_POSITION]
+        where   userCode = #userCode# and  positionId = #positionId# and orgId = #orgId#
+    </select>
+
+    <select id="count" parameterClass="Integer" resultClass="Integer">
+        select count(1) from [dbo].[T_OMS_EMPLOYEE_POSITION]
+        where   id = #id#
+    </select>
+
+    <select id="findById" parameterClass="Integer" resultClass="vEmployeePosition">
+        SELECT ep.*,e.userNameCn,o.orgName,p.positionName FROM dbo.T_OMS_EMPLOYEE_POSITION ep
+        INNER JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR e ON ep.userCode = e.userCode
+        INNER JOIN dbo.T_OMS_ORGANIZATION o ON ep.orgId = o.id
+        INNER JOIN dbo.T_OMS_POSITION p ON ep.positionId = p.id
+        WHERE ep.id = #id#
+    </select>
+
+    <update id="deleteByUserCode" parameterClass="Integer">
+        DELETE FROM T_OMS_EMPLOYEE_POSITION WHERE
+        userCode = #userCode# and partTime = 1
+    </update>
+
+    <select id="countEmployee" parameterClass="map" resultClass="integer">
+        select count(1) from T_OMS_EMPLOYEE_POSITION as ep
+        inner join T_OMS_EMPLOYEE_BASEINFOR as e on ep.userCode = e.userCode and e.status in ('正式','试用期')
+        where
+        <dynamic>
+            <isNotNull property="positionId">
+                ep.positionId = #positionId#
+            </isNotNull>
+            <isNotNull property="orgId">
+                ep.orgId = #orgId#
+            </isNotNull>
+        </dynamic>
+    </select>
+
+    <delete id="delPs" parameterClass="map">
+        DELETE FROM T_OMS_EMPLOYEE_POSITION WHERE
+        <isNotNull property="delIds">
+            <![CDATA[ id in ]]>
+            <iterate property="delIds" conjunction="," open="(" close=")">
+                #delIds[]#
+            </iterate>
+        </isNotNull>
+    </delete>
+
+    <select id="queryParttimePositions" parameterClass="integer" resultClass="vEmployeePosition">
+      select id,userCode,userName as userNameCn,orgId,orgName,positionId,positionName from     v2_employee_final_parttime
+      where usercode = #userCode#
+    </select>
+</sqlMap>

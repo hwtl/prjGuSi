@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeTrain">
+	<insert id="insert">
+      insert into T_OMS_EMPLOYEE_TRAIN (userCode, startDate, endDate, 
+      trainName, certificate, creator, createTime  )
+    values (#userCode#, #startDate#, #endDate#, 
+      #trainName:VARCHAR#, #certificate:VARCHAR#, #creator:INTEGER#, getDate())
+  </insert>  
+  <delete id="deleteByUserCode">
+  	DELETE FROM T_OMS_EMPLOYEE_TRAIN WHERE  userCode = #userCode#
+  </delete>
+  <select id="findByUserCode" resultClass="employeeTrain" >
+	  SELECT  trainId, userCode, startDate, endDate, trainName, certifiCate FROM T_OMS_EMPLOYEE_TRAIN
+	  WHERE userCode= #userCode#
+  </select>
+    
+</sqlMap>

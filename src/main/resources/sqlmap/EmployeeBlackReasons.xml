@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeBlackReasons">
+  <insert id="insert">
+  	INSERT INTO dbo.T_OMS_EMPLOYEE_BLACK_REASONS( blackId , reasonId , reason , description     )
+	VALUES  ( #blackId:INTEGER# ,#reasonId:INTEGER#  , #reason:VARCHAR# , #description:VARCHAR# )
+  </insert>
+  
+  <!-- 根据黑名单查找黑名单原因 -->
+  <select id="findByBlackId" resultClass="employeeBlackReasons">
+  SELECT reason,description FROM dbo.T_OMS_EMPLOYEE_BLACK_REASONS WHERE blackId=#blackId#
+  </select>
+</sqlMap>

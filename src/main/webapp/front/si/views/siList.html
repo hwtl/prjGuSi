@@ -1,0 +1,231 @@
+<h1 class="f18">社保管理</h1>
+
+<!-- 一级导航 begin -->
+<table width="100%" cellpadding="0" cellspacing="0" class="navTab1th">
+	<tbody>
+		<tr align="center">
+			<td ng-show="$parent.privileges.hrm_si_view" class="current" width="33%"><a href="siList">社会保险</a></td>
+			<!--<td ng-show="$parent.privileges.hrm_gjj_view" width="33%"><a href="#/borrowList">公积金</a></td>
+			<td ng-show="$parent.privileges.hrm_yw_view" width="33%"><a href="#/applyList">意外保险</a></td>-->
+		</tr>
+	</tbody>
+</table>
+<!-- 一级导航 end -->
+
+<!-- 二级导航 begin -->
+<div class="navTab2th mt_15 clearfix">
+	<a href="siList" class="current">缴纳信息</a>
+	<a href="siShNewList">上海</a>
+	<a href="siNbNewList">宁波</a>
+	<a href="siSzQuitList">深圳</a>
+</div>
+<!-- 二级导航 end -->
+
+<!-- 搜索条件 begin -->
+<table class="tableFormNew mt_15">
+	<tr>
+		<td style="width:94%" class="bdR">
+			<ul class="fatSearch">
+		        <li class="content">缴纳地：
+		        	<select class="tt160" ng-model="query.paymentLocationId" ng-options="opt.id as opt.name for opt in categories.paymentLocationList">
+						<option value="">请选择</option>
+					</select>
+		        </li>
+		        <li class="content">部门：
+		        	<duitree checkable-type="all" datasource-type="all" selected-data="init.orgInfo" tree-type="popup" searchable="true" org-status="0,1,2"></duitree>
+		        </li>
+		        <li class="content">参保起始月份：
+		        	<span><input type="text" name="" class="txtDate onlyMonth" date-picker ng-model="$parent.query.beginDateStart" readonly="readonly" /></span> - <span><input type="text" name="" class="txtDate onlyMonth" date-picker ng-model="$parent.query.beginDateEnd" readonly="readonly" /></span>
+		        </li>
+		        <li class="content" style="padding-right:20px">参保结束月份：
+		        	<span><input type="text" name="" class="txtDate onlyMonth" date-picker ng-model="$parent.query.endDateStart" readonly="readonly" /></span> - <span><input type="text" name="" class="txtDate onlyMonth" date-picker ng-model="$parent.query.endDateEnd" readonly="readonly" /></span>
+		        </li>
+		        <li class="content" style="padding-right:20px">异地申请表：
+		        	<select class="tt160" ng-model="query.applyForm" ng-options="opt.id as opt.name for opt in categories.applyFormList">
+						<option value="">请选择</option>
+					</select>
+		        </li>
+		        <li class="content" style="padding-right:0px">异地申请表发放时间：
+		        	<span><input type="text" name="" class="txtDate" date-picker ng-model="$parent.query.applyFormDateStart" readonly="readonly" /></span> - <span><input type="text" name="" class="txtDate" date-picker ng-model="$parent.query.applyFormDateEnd" readonly="readonly" /></span>
+		        </li>
+		        <li class="content">社保卡：
+		        	<select class="tt160" ng-model="query.possessSocialCard" ng-options="opt.id as opt.name for opt in categories.socialCardList">
+						<option value="">请选择</option>
+					</select>
+		        </li>
+		        <li class="content">补缴周期：
+		        	<span><input type="text" name="" class="txtDate onlyMonth" date-picker ng-model="$parent.query.extraBeginDate" readonly="readonly" /></span> - <span><input type="text" name="" class="txtDate onlyMonth" date-picker ng-model="$parent.query.extraEndDate" readonly="readonly" /></span>
+		        </li>
+		        <li class="content">职等职级：
+					<input type="text" ng-model="params.levelIds" name="levelIds" class="hideit" id="levelIds" />
+					<input type="text" class="selInput tt160" id="selectDept" value="{{init.levelNames}}" deptid="" readonly="readonly" pid="" ng-click="openLevelPop()"/>
+					<div id="popup_tree" class="popup_tree" style="width:450px">
+						<div class="bg_blue txtRight pd_6 pr_20">
+							<a href="javascript:;" class="btn-small btn-blue in_block" ng-click="getLevel()">确定</a>
+						</div>
+						<div id="treeWrap" class="treeWrap mt_10" style="width:450px"></div>
+					</div>
+		        </li>
+		        <li class="content">缴费基数：
+		        	<input type="text" class="txtNew" ng-model="query.paymentBase" maxlength="9" />
+		        </li>
+		        <li class="content">户籍性质：
+		        	<select class="tt160" ng-model="query.censusId" ng-options="opt.id as opt.name for opt in categories.censusList">
+						<option value="">请选择</option>
+					</select>
+		        </li>
+		        <li class="content">入职日期：
+		        	<span><input type="text" name="" class="txtDate" date-picker ng-model="$parent.query.newJoinDateStart" readonly="readonly" /></span> - <span><input type="text" name="" class="txtDate" date-picker ng-model="$parent.query.newJoinDateEnd" readonly="readonly" /></span>
+		        </li>
+		        <li class="content">关键字：
+		    		<input type="text" class="txtNew tt160" name="" placeholder="工号、姓名、身份证号码" ng-model="query.keyword" value="" maxlength="50"/>
+		    		<label><input type="checkbox" value="" ng-model="init.paymentStatus"/>显示当前在缴</label>
+		    		<label><input type="checkbox" value="" ng-model="init.leave"/>显示离职人员</label>
+		        </li>
+			</ul>
+		</td>
+		<td nowrap class="center" style="min-width:120px; width:6%; vertical-align:middle">
+			<a href="javascript:;" class="btn-small btn-blue in_block" ng-click="search(true)">查询</a>
+		</td>
+	</tr>
+</table>
+<!-- 搜索条件 end -->
+
+<!-- 班级列表 begin -->
+<div class="mt_15">
+	<p class="mt_15 clearfix">
+		<span class="left"><strong class="red" ng-bind="result.totalCount"></strong> 个符合条件的结果</span>
+		<span class="right">
+			<input type="file" accept=".xls, xlsx" id="trueFile2" class="hideit" />
+			<a href="javascript:;" class="import_excel in_block" ng-show="$parent.privileges.hrm_si_operate" id="uploadFile_excel">导入数据</a>
+			<a href="{{excelUrl}}" class="export_excel in_block ml_10" ng-show="$parent.privileges.hrm_si_operate" ng-click="exportExcel()">导出数据</a>
+		</span>
+	</p>
+	<table width="1400" cellspacing="0" class="tableListNew tableNarrow mt_10" >
+		<tr class="trHead trHighHead">
+			<td width="40" nowrap>缴纳地</td>
+			<td width="40" nowrap>工号</td>
+			<td width="60" nowrap>姓名</td>
+			<td width="75" nowrap>部门</td>
+			<td width="70" nowrap>入职时间</td>
+			<td width="75" nowrap>&nbsp;参保起始月份<br />/参保结束月份</td>
+			<td width="100" nowrap>补缴周期</td>
+			<td width="110" nowrap>身份证号码</td>
+			<td width="50" nowrap>户籍性质</td>
+			<td width="50" nowrap>缴费基数</td>
+			<td width="75" nowrap>职系</td>
+			<td width="50" nowrap>职等职级</td>
+			<td width="60" nowrap>社保卡<br />（有/无）</td>
+			<td width="60" nowrap>异地申请表<br />(有/无)</td>
+			<td width="60" nowrap>异地申请表<br />发放时间</td>
+			<td width="80" nowrap>备注</td>
+			<td width="30" nowrap>附件</td>
+			<td width="50" nowrap>操作</td>
+		</tr>
+		<tbody ng-cloak>
+			<tr ng-repeat="item in result.resultList" ng-class="{history:item.paymentStatus==0}">
+				<td width="40" nowrap>{{ item.paymentLocationName }}&nbsp;</td>
+				<td width="40" nowrap>{{ item.userCode }}&nbsp;</td>
+				<td width="60" nowrap>{{ item.userName }}&nbsp;</td>
+				<td width="75" nowrap>{{ item.orgName }}&nbsp;</td>
+				<td width="70" nowrap>{{ item.newJoinDate | date:'yyyy-MM-dd' }}&nbsp;</td>
+				<td width="75" nowrap>&nbsp;{{ item.beginDate | date:'yyyy-MM' }}<br />/{{ item.endDate | date:'yyyy-MM' }}&nbsp;</td>
+				<td width="100" nowrap>{{ item.extraBeginDate | date:'yyyy-MM' }}<span ng-show="item.extraBeginDate && item.extraEndDate">至{{ item.extraEndDate | date:'yyyy-MM' }}&nbsp;</td>
+				<td width="110" nowrap>{{ item.credentialsNo }}&nbsp;</td>
+				<td width="50" nowrap>{{ item.censusName }}&nbsp;</td>
+				<td width="50" nowrap>{{ item.paymentBase }}&nbsp;</td>
+				<td width="75" nowrap>{{ item.serialName }}&nbsp;</td>
+				<td width="50" nowrap>{{ item.titleLevelDegree }}&nbsp;</td>
+				<td width="60" nowrap><span ng-show="item.possessSocialCard==1">有</span>&nbsp;</td>
+				<td width="60" nowrap><span ng-show="item.applyForm==1 && item.applyFormAttachUrl">有 <a href="{{item.applyFormAttachUrlBig}}" class="attachMini in_block" target="_blank"></a></span>&nbsp;</td>
+				<td width="60" nowrap>{{ item.applyFormDate | date:'yyyy-MM-dd'}}&nbsp;</td>
+				<td nowrap width="80">{{ item.comment }}&nbsp;</td>
+				<td width="30" nowrap><a href="{{item.attachUrlBig}}" class="attachMini in_block" target="_blank" ng-show="item.attachUrl"></a>&nbsp;</td>
+				<td width="50" nowrap><a href="javascript:;" class="btn-small btn-silver in_block" ng-show="$parent.privileges.hrm_si_operate" ng-click="edit(item, $index)">编辑</a></td>
+			</tr>
+			<tr ng-show="result.totalCount == 0">
+				<td colspan="12" class="center grey999">亲爱的伙伴，没有您查询的数据结果哦。</td>
+				<td colspan="6">&nbsp;</td>
+			</tr>
+			<tr ng-show="init.act.listLoading">
+				<td colspan="12" class="center"><img src="http://dui.dooioo.com/public/images/icon_ajaxload.gif" class="mh_auto disblock"></td>
+				<td colspan="6">&nbsp;</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+<!-- 班级列表 end -->
+
+<!--paginate begin-->
+<div paginator record-count="result.totalCount" page-size="result.pageSize" current-page="query.pageNo"></div>
+<!--paginate end-->
+
+<!-- 编辑弹层 begin-->
+<div class="popLayer" id="layer_edit">
+	<div class="popTitle clearfix">
+		<h1>编辑</h1>
+		<div class="cls"><a href="javascript:;" class="xx" onclick="hidePopupDiv($('#layer_edit'))"></a></div>
+	</div>
+	<div class="popCon">
+		<div class="form">
+			<form id="editForm">
+				<input type="file" accept=".jpg,.jpeg,.gif,.bmp,.png" id="trueFile" class="hideit" />
+				<table border="0" cellpadding="0" cellspacing="0" class="tableFormNew mt_5">
+					<tr>
+						<td class="tdTitle">员工：</td>
+						<!-- <td class="request" width="10">&nbsp;</td> -->
+						<td>
+							{{ params.userName }}（{{ params.userCode}} {{ params.orgName }}）
+						</td>
+					</tr>
+					<tr>
+						<td class="tdTitle" width="80">异地申请表：</td>
+						<!-- <td class="request">&nbsp;</td> -->
+						<td>
+							<p><a href="javascript:;" class="attach_lnk in_block" id="uploadFile"><span class="upload_lnk in_block">上传</span></a>
+							</p>
+							<div class="mt_10" ng-show="params.applyFormAttachUrl">
+								<div class="attThumbWrap">
+						            <div class="attThumbWrapInner">
+						                <a class="attach_thumbnail" style="background:url({{params.applyFormAttachUrlSmall}}) no-repeat center center;" href="{{params.applyFormAttachUrlBig}}" target="_blank">
+						                </a>
+						                <div class="op"><a href="javascript:;" class="red noBold" ng-click="delAttach(params.id, 1)">删除</a></div>
+								    </div>
+						        </div>
+						    </div>
+						</td>
+					</tr>
+					<tr>
+						<td class="tdTitle">附件：</td>
+						<!-- <td class="request">&nbsp;</td> -->
+						<td>
+							<p><a href="javascript:;" class="attach_lnk in_block" id="uploadFile2"><span class="upload_lnk in_block">上传</span></a></p>
+							<div class="mt_10" ng-show="params.attachUrl">
+								<div class="attThumbWrap">
+						            <div class="attThumbWrapInner">
+						                <a class="attach_thumbnail" style="background:url({{params.attachUrlSmall}}) no-repeat center center;" href="{{params.attachUrlBig}}" target="_blank">
+						                </a>
+						                <div class="op"><a href="javascript:;" class="red noBold" ng-click="delAttach(params.id, 2)">删除</a></div>
+								    </div>
+						        </div>
+						    </div>
+						</td>
+					</tr>
+					<tr>
+						<td class="tdTitle">备注：</td>
+						<!-- <td class="request" width="10">&nbsp;</td> -->
+						<td>
+							<textarea class="tANew tt280" maxlength="100" ng-model="params.comment"></textarea>
+						</td>
+					</tr>
+				</table>
+			</form>
+		</div>
+	</div><br><br>
+	<div class="popBtn">
+		<img src="http://dui.dooioo.com/public/images/loading-small.gif" class="in_block mt_5" ng-show="init.act.popupLoading">
+		<a href="javascript:;" class="btn-small btn-silver in_block ml_5" onclick="hidePopupDiv($('#layer_edit'))" ng-class="{disable: init.act.popupDisabled}" ng-disabled="init.act.popupDisabled">关闭</a>
+		<a href="javascript:;" class="btn-small btn-blue in_block ml_5" ng-click="editSubmit()" ng-class="{disable: init.act.popupDisabled}" ng-disabled="init.act.popupDisabled">提交</a>
+	</div>
+</div>
+<!-- 编辑弹层 end-->

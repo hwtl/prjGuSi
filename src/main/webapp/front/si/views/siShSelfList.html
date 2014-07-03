@@ -1,0 +1,31 @@
+<h1 class="f18">社保管理</h1>
+
+<!-- 一级导航 begin -->
+<table width="100%" cellpadding="0" cellspacing="0" class="navTab1th">
+	<tbody>
+		<tr align="center">
+			<td ng-show="$parent.privileges.hrm_si_view" class="current" width="33%"><a href="siList">社会保险</a></td>
+			<!--<td ng-show="$parent.privileges.hrm_gjj_view" width="33%"><a href="#/borrowList">公积金</a></td>
+			<td ng-show="$parent.privileges.hrm_yw_view" width="33%"><a href="#/applyList">意外保险</a></td>-->
+		</tr>
+	</tbody>
+</table>
+<!-- 一级导航 end -->
+
+<!-- 二级导航 begin -->
+<div class="navTab2th mt_15 clearfix">
+	<a href="siList">缴纳信息</a>
+	<a href="siShNewList" class="current">上海</a>
+	<a href="siNbNewList">宁波</a>
+	<a href="siSzQuitList">深圳</a>
+</div>
+<!-- 二级导航 end -->
+
+<!-- 三级导航 begin -->
+<div class="navTab3th mt_10 clearfix">
+	<a href="siShNewList">新进</a>
+	<a href="siShQuitList">退出</a>
+	<a href="siShSelfList" class="current">自缴</a>
+</div>
+<!-- 三级导航 end -->
+<p class="mt_20 grey999 f14">正在努力开发中</p>

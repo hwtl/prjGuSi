@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeInterviewParameter">
+   <cacheModel type="MEMORY" id="interviewParameterCache">
+   		<property name="reference-type" value="SOFT"/>
+   		<flushInterval hours="2"/>
+   </cacheModel>
+   <!-- 查找经面谈参数 -->
+	<select id="findForInterviewParameter" resultClass="employeeInterviewParameter" cacheModel="interviewParameterCache">
+		SELECT id,parentId,parameterValue,other FROM dbo.T_OMS_EMPLOYEE_INTERVIEW_PARAMETER 
+		WHERE status=1 AND paramterType in ($parameterType$)	ORDER BY parentId,sort
+	</select>	
+	<select id="findForBlackParameter"  resultClass="employeeInterviewParameter" cacheModel="interviewParameterCache">
+		SELECT id,parentId,parameterValue,other FROM dbo.T_OMS_EMPLOYEE_INTERVIEW_PARAMETER 
+		WHERE status=1 AND paramterType=#parameterType#	ORDER BY parentId,sort
+	</select>
+</sqlMap>

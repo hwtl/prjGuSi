@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+			http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+			http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd"
+       default-autowire="byName" default-lazy-init="false">
+
+    <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
+
+    <context:component-scan base-package="com.dooioo.*"/>
+    <context:annotation-config/>
+    
+	<task:executor id="executor" pool-size="100" keep-alive="300" queue-capacity="200"/>
+    <task:scheduler id="scheduler" pool-size="100"/>
+    <task:annotation-driven executor="executor" scheduler="scheduler"/>
+
+	<bean id="applicationProperties" class="com.gusi.boms.common.AppConfigurer">
+        <property name="locations">
+            <list>
+            	<value>classpath:jdbc.properties</value>
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="true" />
+        <property name="ignoreUnresolvablePlaceholders" value="true" />
+    </bean>
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- set the max upload size100MB -->
+        <property name="maxUploadSize" value="104857600"/>
+        <property name="maxInMemorySize" value="4096"/>
+    </bean>
+
+    <!--组织架构数据源-->
+    <bean id="bomsDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="url" value="${${env}.boms.jdbc.url}"/>
+        <property name="driverClassName" value="${${env}.boms.jdbc.driver}"/>
+        <property name="username" value="${${env}.boms.jdbc.username}"/>
+        <property name="password" value="${${env}.boms.jdbc.password}"/>
+        <property name="initialSize" value="5"/>
+        <property name="maxActive" value="50"/>
+        <property name="maxIdle" value="2"/>
+        <property name="minIdle" value="1"/>
+        <property name="defaultAutoCommit" value="true"/>
+    </bean>
+
+    <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean"
+          p:configLocation="classpath:sqlmap/sqlMapConfig.xml"
+          p:dataSource-ref="bomsDataSource" />
+
+    <bean id="queryDao"  class="com.dooioo.web.dao.QueryDao" autowire="byName" p:sqlMapClient-ref="sqlMapClient"/>
+
+	<!-- 工作流任务Listener Begin -->
+	<bean id="activitiService" class="com.gusi.boms.service.ActivitiService" />
+	<!-- 工作流任务Listener End -->
+
+    <!--RTX同步的数据库-->
+    <bean id="dooiooerp_dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="url" value="${${env}.dooiooerp.jdbc.url}"/>
+        <property name="driverClassName" value="${${env}.dooiooerp.jdbc.driver}"/>
+        <property name="username" value="${${env}.dooiooerp.jdbc.username}"/>
+        <property name="password" value="${${env}.dooiooerp.jdbc.password}"/>
+        <property name="initialSize" value="5"/>
+        <property name="maxActive" value="50"/>
+        <property name="maxIdle" value="2"/>
+        <property name="minIdle" value="1"/>
+        <property name="defaultAutoCommit" value="true"/>
+    </bean>
+    <bean id="dooiooerpDao" class="com.dooioo.web.dao.QueryDao" p:dataSource-ref="dooiooerp_dataSource"/>
+
+    <!-- 核算部门对应关系的数据库 -->
+     <bean id="account_dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+         <property name="url" value="${${env}.account.jdbc.url}"/>
+         <property name="driverClassName" value="${${env}.account.jdbc.driver}"/>
+         <property name="username" value="${${env}.account.jdbc.username}"/>
+         <property name="password" value="${${env}.account.jdbc.password}"/>
+         <property name="initialSize" value="5"/>
+         <property name="maxActive" value="50"/>
+         <property name="maxIdle" value="2"/>
+         <property name="minIdle" value="1"/>
+         <property name="defaultAutoCommit" value="true"/>
+    </bean>
+	<bean id="accountDao" class="com.dooioo.web.dao.QueryDao" p:dataSource-ref="account_dataSource"/>
+
+    <!-- 金蝶客户数据 -->
+	<bean id="eas_dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="url" value="${eas.jdbc.url}"/>
+        <property name="driverClassName" value="${eas.jdbc.driver}"/>
+        <property name="username" value="${eas.jdbc.username}"/>
+        <property name="password" value="${eas.jdbc.password}"/>
+        <property name="initialSize" value="5"/>
+        <property name="maxActive" value="50"/>
+        <property name="maxIdle" value="2"/>
+        <property name="minIdle" value="1"/>
+        <property name="defaultAutoCommit" value="true"/>
+    </bean>
+	<bean id="easDao" class="com.dooioo.web.dao.QueryDao" p:dataSource-ref="eas_dataSource"/>
+
+    <!-- 事务配置 begin -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+          p:dataSource-ref="bomsDataSource"/>
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <!--事务配置 end-->
+
+    <bean id="fkUtil" class="com.dooioo.plus.util.FreemarkerUtil"/>
+
+    <!-- 指定需要拦截器连接的路径，请指定路径拦截，尽量不要用全**，避免额外的拦截 -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+        	<mvc:mapping path="/*"/>
+        	<mvc:mapping path="/archives/**"/>
+            <mvc:mapping path="/employee/**"/>
+            <mvc:mapping path="/position/**"/>
+            <mvc:mapping path="/organization/**"/>
+            <mvc:mapping path="/privilege/**"/>
+            <mvc:mapping path="/backstage/**"/>
+            <mvc:mapping path="/changes/**"/>
+            <mvc:mapping path="/reward/**"/>
+            <!-- 核算部门 -->
+            <mvc:mapping path="/accounting/**"/>
+            <!-- 离职面谈 -->
+            <mvc:mapping path="/interview/**"/>
+            <!-- 整租转调 -->
+            <mvc:mapping path="/transfer/**"/>
+            <!--社保相关-->
+            <mvc:mapping path="/si/**"/>
+            <mvc:mapping path="/front/**"/>
+            <bean class="com.gusi.boms.inteceptor.LoginInteceptor" />
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <mvc:mapping path="/*"/>
+            <mvc:mapping path="/organization/**"/>
+            <mvc:mapping path="/archives/**"/>
+            <mvc:mapping path="/employee/**"/>
+            <mvc:mapping path="/position/**"/>
+            <mvc:mapping path="/organization/**"/>
+            <mvc:mapping path="/privilege/**"/>
+            <mvc:mapping path="/backstage/**"/>
+            <mvc:mapping path="/changes/**"/>
+            <mvc:mapping path="/reward/**"/>
+            <!-- 核算部门 -->
+            <mvc:mapping path="/accounting/**"/>
+            <!-- 离职面谈 -->
+            <mvc:mapping path="/interview/**"/>
+            <!-- 整租转调 -->
+            <mvc:mapping path="/transfer/**"/>
+            <!--社保相关-->
+            <mvc:mapping path="/si/**"/>
+            <bean class="com.dooioo.webplus.interceptors.WebPlusTokenInterceptor" />
+        </mvc:interceptor>
+    </mvc:interceptors>
+</beans>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+        version="2.0">
+    <description>DY JSTL 1.0 functions library</description>
+    <display-name>DY JSTL functions</display-name>
+    <tlib-version>1.0</tlib-version>
+    <short-name>dy</short-name>
+    <tag>
+        <name>checkPrivilege</name>
+        <tag-class>com.gusi.boms.common.tag.AuthorityTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+            <description>权限url</description>
+            <name>url</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <description>没有权限显示的内容</description>
+            <name>display</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <description>权限验证模式</description>
+            <name>mode</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <name>checkEmpTransferPrivilege</name>
+        <tag-class>com.gusi.empTransfer.tag.EmployeeTransferTag</tag-class>
+        <body-content>JSP</body-content>
+        <attribute>
+            <description>权限url</description>
+            <name>url</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <description>没有权限显示的内容</description>
+            <name>display</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <description>权限验证模式</description>
+            <name>mode</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <name>numberOption</name>
+        <tag-class>com.gusi.boms.common.tag.NumberOptionTag</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <description>起始数字</description>
+            <name>fromIndex</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <description>截止数字</description>
+            <name>toIndex</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <description>选中的参数</description>
+            <name>selected</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+    <tag>
+        <name>paginate</name>
+        <tag-class>com.gusi.boms.tag.EmpPaginateTag</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>template</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+</taglib>

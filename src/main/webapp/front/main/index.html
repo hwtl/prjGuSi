@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html ng-app="si">
+<head>
+	<meta charset="UTF-8">
+	<title>社保管理 - 德佑地产</title>
+	<base href="/si/common/index/">
+	<link type="text/css" rel="stylesheet" href="http://dui.dooioo.com/public/css/main.css">
+	<link type="text/css" rel="stylesheet" href="http://dui.dooioo.com/public/css/header.css"/>
+	<link rel="stylesheet" type="text/css" href="http://dui.dooioo.com/public/css/treeNew.css">
+	<link rel="stylesheet" type="text/css" href="/static/front/si/css/si.css">
+</head>
+<body>
+	<!--header begin-->
+	<div id="new_header"></div>
+	<!--header end-->	
+	<div class="container">
+		<div ng-view></div>
+	</div>
+
+
+
+	<!-- footer begin -->
+	<div class="footer clearFix" ng-style="containerWidth" ng-cloak>©2013 德佑地产 <span ng-show="version">版本：{{version}}</span></div>
+	<!-- footer end -->
+	
+	
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/lib/jquery-1.6.2.min.js"></script>
+	<script type="text/javascript">
+	var headerParameters = {
+        empNo: 83124,
+        empName: '张三',
+        env : 'development'
+    };
+    var privileges = {};
+    privileges['hrm_si_sh_view'] = true;
+    privileges['hrm_si_sh_operate'] = true;
+    privileges['hrm_si_nb_view'] = true;
+    privileges['hrm_si_nb_operate'] = true;
+    privileges['hrm_si_sz_view'] = true;
+    privileges['hrm_si_sz_operate'] = true;
+    privileges['hrm_si_view'] = true;
+    privileges['hrm_si_operate'] = true;
+    
+    var version = '1.0';
+	</script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/header.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/fns.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/lib/angular.min.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/angular/lib/angular-mocks.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/WdatePicker.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/paginate.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/angular/directive/directive.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/validation.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/autocomplete.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/plugs/jquery-tree-1.0.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/dui_treePanel.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/json/dooioo/dooiooAll.js"></script>
+	<script type="text/javascript" src="http://dui.dooioo.com/public/js/plugs/jquery-upload-1.0.js"></script>
+	<script type="text/javascript" src="/static/front/si/js/app.js"></script>
+	<script type="text/javascript" src="/static/front/si/js/controller/siListCtrl.js"></script>
+	<script type="text/javascript" src="/static/front/si/js/controller/siShNewListCtrl.js"></script>
+	<script type="text/javascript" src="/static/front/si/js/controller/siShQuitListCtrl.js"></script>
+	<script type="text/javascript" src="/static/front/si/js/controller/siShSelfListCtrl.js"></script>
+	<script type="text/javascript" src="/static/front/si/js/controller/siNbNewListCtrl.js"></script>
+	<script type="text/javascript" src="/static/front/si/js/controller/siNbQuitListCtrl.js"></script>
+	<script type="text/javascript" src="/static/front/si/js/controller/siSzQuitListCtrl.js"></script>
+</body>
+</html>

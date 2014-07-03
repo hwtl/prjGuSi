@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Attachment">
+    <insert id="insertAndReturnId" parameterClass="attachment">
+        INSERT T_OMS_ATTACHMENT(
+        [userCode]
+       ,[attachType]
+       ,[attachFilename]
+       ,[attachPath]
+       ,[createTime]
+       ,[creator]
+       ,[creatorName]
+       ,[valid]
+        ) VALUES (
+        #userCode#,
+        #attachType#,
+        #attachFilename#,
+        #attachPath#,
+        GETDATE(),
+        #creator#,
+        #creatorName#,
+        0
+        )
+        <selectKey  resultClass="integer" keyProperty="id" >
+            SELECT
+            @@IDENTITY AS ID
+        </selectKey>
+    </insert>
+
+    <update id="updateAttach" parameterClass="map">
+        UPDATE
+        T_OMS_ATTACHMENT
+        SET
+        [valid] = 1
+        WHERE
+        <isNotNull property="attachIds">
+            <![CDATA[ id in ]]>
+            <iterate property="attachIds" conjunction="," open="(" close=")">
+                #attachIds[]#
+            </iterate>
+        </isNotNull>
+    </update>
+   
+     <update id="updateValidById">
+          UPDATE
+        T_OMS_ATTACHMENT
+        SET
+        [valid] = 1
+        WHERE id=#attachId#
+     </update>
+
+    <update id="delAttach" parameterClass="map">
+        DELETE FROM
+        T_OMS_ATTACHMENT
+        WHERE
+        <isNotNull property="attachIds">
+            <![CDATA[ id in ]]>
+            <iterate property="attachIds" conjunction="," open="(" close=")">
+                #attachIds[]#
+            </iterate>
+        </isNotNull>
+    </update>
+
+    <select id="query" parameterClass="integer" resultClass="attachment">
+         SELECT * FROM T_OMS_ATTACHMENT  WHERE userCode = #userCode#
+         AND valid = 1
+	</select>
+
+    <select id="hasAttach" parameterClass="map" resultClass="integer">
+        select count(1) from T_OMS_ATTACHMENT
+        where valid = 1 and attachType = #attachType#
+              and userCode = #userCode#
+    </select>
+
+    <select id="findAttachmentPaths" parameterClass="map" resultClass="attachment">
+         select * from T_OMS_ATTACHMENT
+        where attachType = #attachType#
+              and userCode = #userCode#
+              AND valid = 1
+    </select>
+
+    <select id="findById" parameterClass="integer" resultClass="attachment">
+         select * from T_OMS_ATTACHMENT
+        where id = #id#
+    </select>
+
+
+    <select id="findByValid" resultClass="attachment">
+         select * from T_OMS_ATTACHMENT
+         where valid = 0
+    </select>
+
+    <delete id="deleteById" parameterClass="integer">
+        delete from T_OMS_ATTACHMENT
+        where id = #attachId#
+    </delete>
+</sqlMap>

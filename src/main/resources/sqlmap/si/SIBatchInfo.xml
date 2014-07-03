@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="SIBatchInfo">
+
+    <typeAlias alias="siBatchInfo" type="com.gusi.socialInsurance.model.SIBatchInfo"/>
+
+    <insert id="insert">
+      INSERT INTO dbo.T_OMS_SI_BATCH_INFO
+        ( batchId ,
+          previousBatchId ,
+          paymentLocationId ,
+          changeTypeId ,
+          paymentYear ,
+          paymentMonth ,
+          paymentDay ,
+          paymentDate ,
+          generateList ,
+          confirmStatus ,
+          status ,
+          createTime ,
+          creator ,
+          updateTime ,
+          updator
+        )
+      VALUES  (
+          #batchId#,
+          #previousBatchId#,
+          #paymentLocationId#,
+          #changeTypeId#,
+          #paymentYear#,
+          #paymentMonth#,
+          #paymentDay#,
+          #paymentDate#,
+          #generateList#,
+          #confirmStatus#,
+          #status#,
+          #createTime#,
+          #creator#,
+          #updateTime#,
+          #updator#
+        )
+    </insert>
+
+    <insert id="backUpEmployeeData">
+        INSERT INTO dbo.T_OMS_SI_EMPLOYEE
+        ( batchId ,
+          userCode ,
+          credentialsNo ,
+          status ,
+          newJoinDate ,
+          leaveDate ,
+          orgId ,
+          positionId ,
+          levelId ,
+          serialId ,
+          titleDegree ,
+          levelDegree ,
+          censusId ,
+          contractType ,
+          contractStartTime ,
+          contractEndTime ,
+          createTime ,
+          createYear ,
+          createMonth ,
+          createDay ,
+          creator
+        )
+    SELECT
+          #batchId#,
+          userCode,
+          credentialsNo,
+          status,
+          newJoinDate,
+          leaveDate,
+          orgId,
+          positionId,
+          levelId,
+          serialId ,
+          titleDegree ,
+          levelDegree ,
+          censusId,
+          contractType,
+          contractStartTime,
+          contractEndTime,
+          #createTime#,
+          YEAR(#createTime#),
+          MONTH(#createTime#),
+          DAY(#createTime#),
+          #creator#
+        FROM dbo.v2_employee_si_base WITH(NOLOCK)
+    </insert>
+
+    <select id="queryForList" resultClass="siBatchInfo">
+        SELECT batchId, generateList, confirmStatus
+        FROM dbo.T_OMS_SI_BATCH_INFO WITH(NOLOCK)
+        WHERE paymentYear = YEAR(#paymentDate#)
+              AND paymentMonth = MONTH(#paymentDate#)
+              AND paymentLocationId = #paymentLocationId#
+              AND changeTypeId = #changeTypeId#
+              AND status = 1
+              AND previousBatchId IS NOT NULL
+        ORDER BY id DESC
+    </select>
+
+    <select id="findBatchInfo" resultClass="siBatchInfo">
+        SELECT top 1 batchId, generateList, confirmStatus
+        FROM dbo.T_OMS_SI_BATCH_INFO WITH(NOLOCK)
+        WHERE paymentYear = YEAR(#paymentDate#)
+              AND paymentMonth = MONTH(#paymentDate#)
+              AND paymentLocationId = #paymentLocationId#
+              AND changeTypeId = #changeTypeId#
+              AND status = 1
+              AND previousBatchId IS NOT NULL
+        ORDER BY id DESC
+    </select>
+
+    <update id="confirmStatus">
+        UPDATE dbo.T_OMS_SI_BATCH_INFO
+        SET confirmStatus = #confirmStatus#
+            ,confirmUser = #confirmUser#
+            ,confirmTime = GETDATE()
+        WHERE batchId = #batchId#
+    </update>
+
+    <select id="getPreviousBatch" resultClass="siBatchInfo">
+        SELECT TOP 1 batchId, paymentDate
+        FROM dbo.T_OMS_SI_BATCH_INFO WITH(NOLOCK)
+        WHERE paymentLocationId = #paymentLocationId#
+               AND changeTypeId = #changeTypeId#
+               AND status = 1
+        ORDER BY id DESC
+    </select>
+
+    <select id="findById" resultClass="siBatchInfo">
+         SELECT batchId,confirmStatus,paymentLocationId,changeTypeId, paymentDate, previousBatchId
+         FROM dbo.T_OMS_SI_BATCH_INFO WITH(NOLOCK)
+         WHERE batchId = #batchId# AND status = 1
+    </select>
+
+    <select id="findByPreviousBatchId" resultClass="siBatchInfo">
+         SELECT TOP 1 batchId,confirmStatus,paymentLocationId,changeTypeId, paymentDate, previousBatchId
+         FROM dbo.T_OMS_SI_BATCH_INFO WITH(NOLOCK)
+         WHERE previousBatchId = #batchId# AND status = 1
+         ORDER BY id DESC
+    </select>
+
+    <update id="updateToDelete">
+        UPDATE dbo.T_OMS_SI_BATCH_INFO
+        SET status = 0
+            ,updator = #updator#
+            ,updateTime = GETDATE()
+        WHERE batchId = #batchId#
+    </update>
+
+    <update id="updatePreviousBatchId">
+        UPDATE dbo.T_OMS_SI_BATCH_INFO
+        SET previousBatchId = #previousBatchId#
+            ,updator = #updator#
+            ,updateTime = GETDATE()
+        WHERE batchId = #batchId#
+    </update>
+
+    <insert id="backUpEmployeeDataFromOtherDataBase">
+        INSERT INTO dbo.T_OMS_SI_EMPLOYEE
+        ( batchId ,
+          userCode ,
+          credentialsNo ,
+          status ,
+          newJoinDate ,
+          leaveDate ,
+          orgId ,
+          positionId ,
+          levelId ,
+          serialId ,
+          titleDegree ,
+          levelDegree ,
+          censusId ,
+          contractType ,
+          contractStartTime ,
+          contractEndTime ,
+          createTime ,
+          createYear ,
+          createMonth ,
+          createDay ,
+          creator
+        )
+    SELECT
+          #batchId#,
+          userCode,
+          credentialsNo,
+          status,
+          newJoinDate,
+          leaveDate,
+          orgId,
+          positionId,
+          levelId,
+          serialId ,
+          titleDegree ,
+          levelDegree ,
+          censusId,
+          contractType,
+          contractStartTime,
+          contractEndTime,
+          #createTime#,
+          YEAR(#createTime#),
+          MONTH(#createTime#),
+          DAY(#createTime#),
+          #creator#
+        FROM $dataBaseName$..v2_employee_si_base WITH(NOLOCK)
+    </insert>
+
+    <select id="countData" resultClass="integer">
+         SELECT COUNT(1) FROM dbo.T_OMS_SI_BATCH_INFO WITH(NOLOCK) WHERE status = 1
+    </select>
+
+</sqlMap>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="RolePrivilegeLog">
+     <!--添加部门与权限 的关系 -->
+    <insert id="insert">
+        INSERT INTO [T_OMS_ROLE_PRIVILEGE_LOG]
+        (
+         [roleId]
+        ,[privilegeIdStr]
+        ,[dataPrivilegeStr]
+        ,[creator]
+        ,[operateType]
+        )
+        VALUES
+        (
+         #roleId#
+        ,#privilegeIdStr#
+        ,#dataPrivilegeStr#
+        ,#creator#
+        ,#operateType#
+        )
+    </insert>
+
+</sqlMap>

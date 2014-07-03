@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="ApplicationPrivilege">
+     <!--添加权限 具体权限 -->
+    <insert id="insertAndReturnId">
+     INSERT INTO [T_OMS_APPLICATION_PRIVILEGE]
+           ([privilegeName]
+           ,[privilegeUrl]
+           ,[appId]
+           ,[privilegeClass]
+            )
+     VALUES
+           (#privilegeName#
+           ,#privilegeUrl#
+           ,#appId#
+           ,#privilegeClass#
+          )
+        <selectKey resultClass="integer" keyProperty="id">
+            SELECT
+            @@IDENTITY AS id
+        </selectKey>
+	</insert>
+
+    <!--根据系统ID获取相应的角色-->
+    <select id="findPrivilegesByAppId" resultClass="applicationPrivilege">
+        SELECT * FROM T_OMS_APPLICATION_PRIVILEGE with(nolock)
+        WHERE appId = $appId$
+    </select>
+
+    <!--检查是有已经存在相同的权限url-->
+    <select id="findPrivilegeUrlExist" resultClass="integer">
+        select count(1) from t_oms_application_privilege where privilegeUrl = '$url$'
+    </select>
+</sqlMap>
+
+

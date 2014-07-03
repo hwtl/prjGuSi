@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="SIBatch">
+
+    <typeAlias alias="siBatch" type="com.gusi.socialInsurance.model.SIBatch"/>
+    <typeAlias alias="vsiBatch" type="com.gusi.socialInsurance.dto.VSIBatch"/>
+    <typeAlias alias="excelBatchNBNew" type="com.gusi.socialInsurance.dto.ExcelBatchNBNew"/>
+    <typeAlias alias="excelBatchNBQuit" type="com.gusi.socialInsurance.dto.ExcelBatchNBQuit"/>
+    <typeAlias alias="excelBatchSZQuit" type="com.gusi.socialInsurance.dto.ExcelBatchSZQuit"/>
+    <typeAlias alias="excelBatchSHNew" type="com.gusi.socialInsurance.dto.ExcelBatchSHNew"/>
+    <typeAlias alias="excelBatchSHQuit" type="com.gusi.socialInsurance.dto.ExcelBatchSHQuit"/>
+
+    <sql id="paginateWhereNBQuit">
+        FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+        LEFT JOIN dbo.T_OMS_SI_BATCH_INFO sbi WITH(NOLOCK) ON sb.batchId = sbi.batchId
+        <dynamic prepend="where">
+            sb.status = 1
+            <isNotEmpty property="nbQuitSearch.batchId">
+                AND sb.batchId = #nbQuitSearch.batchId#
+            </isNotEmpty>
+            <isNotEmpty property="nbQuitSearch.keyword">
+                AND (sb.userCode like '%'+ #nbQuitSearch.keyword# +'%' or sb.userName like '%'+ #nbQuitSearch.keyword# +'%')
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+
+    <select id="queryForPaginateNBQuit" resultClass="vsiBatch">
+        select *
+        from
+        (
+        SELECT
+        row_number() over (order by sb.createTime desc) as rownum
+        ,sb.id
+        ,sb.batchId
+        ,sb.userCode
+        ,sb.userName
+        ,sb.credentialsNo
+        ,sbi.paymentDate
+        <isParameterPresent>
+            <include refid="paginateWhereNBQuit"/>
+        </isParameterPresent>
+        ) as T
+        where T.rownum > #startNo# and T.rownum <![CDATA[ <= ]]> #endNo#
+    </select>
+
+    <select id="countForPaginateNBQuit" resultClass="integer">
+        SELECT
+        count(1)
+        <isParameterPresent>
+            <include refid="paginateWhereNBQuit" />
+        </isParameterPresent>
+    </select>
+
+    <sql id="paginateWhereNBNew">
+        FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+        LEFT JOIN dbo.T_OMS_SI_BATCH_INFO sbi WITH(NOLOCK) ON sb.batchId = sbi.batchId
+        LEFT JOIN dbo.T_OMS_ORGANIZATION o WITH(NOLOCK) ON o.id = 1
+        <dynamic prepend="where">
+            sb.status = 1
+            <isNotEmpty property="nbSearch.batchId">
+                AND sb.batchId = #nbSearch.batchId#
+            </isNotEmpty>
+            <isNotEmpty property="nbSearch.keyword">
+                AND (sb.userCode like '%'+ #nbSearch.keyword# +'%' or sb.userName like '%'+ #nbSearch.keyword# +'%')
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+
+    <select id="queryForPaginateNBNew" resultClass="vsiBatch">
+        select *
+        from
+        (
+        SELECT
+        row_number() over (order by sb.createTime desc) as rownum
+        ,sb.id
+        ,sb.batchId
+        ,sb.userCode
+        ,sb.userName
+        ,sb.orgName
+        ,sb.sex
+        ,sb.censusId
+        ,o.address as companyAddr
+        ,sb.credentialsNo
+        ,o.orgPhone as companyPhone
+        ,sbi.paymentDate
+        ,sb.paymentBase
+        ,CAST(sb.requireDate AS DATETIME) as requireDate
+        ,sb.comment
+        ,sb.contractEnd
+        ,sb.applyStatus
+        ,sb.failureReason
+        <isParameterPresent>
+            <include refid="paginateWhereNBNew"/>
+        </isParameterPresent>
+        ) as T
+        where T.rownum > #startNo# and T.rownum <![CDATA[ <= ]]> #endNo#
+    </select>
+
+    <select id="countForPaginateNBNew" resultClass="integer">
+        SELECT
+        count(1)
+        <isParameterPresent>
+            <include refid="paginateWhereNBNew" />
+        </isParameterPresent>
+    </select>
+
+    <sql id="paginateWhereSZQuit">
+        FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+        LEFT JOIN dbo.T_OMS_SI_BATCH_INFO sbi WITH(NOLOCK) ON sb.batchId = sbi.batchId
+        <dynamic prepend="where">
+            sb.status = 1
+            <isNotEmpty property="szSearch.batchId">
+                AND sb.batchId = #szSearch.batchId#
+            </isNotEmpty>
+            <isNotEmpty property="szSearch.keyword">
+                AND (sb.userCode like '%'+ #szSearch.keyword# +'%' or sb.userName like '%'+ #szSearch.keyword# +'%')
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+
+    <select id="queryForPaginateSZQuit" resultClass="vsiBatch">
+        select *
+        from
+        (
+        SELECT
+        row_number() over (order by sb.createTime desc) as rownum
+        ,sb.id
+        ,sb.batchId
+        ,sb.orgName
+        ,sb.userCode
+        ,sb.userName
+        ,sb.credentialsNo
+        ,sbi.paymentDate
+        ,sb.comment
+        <isParameterPresent>
+            <include refid="paginateWhereSZQuit"/>
+        </isParameterPresent>
+        ) as T
+        where T.rownum > #startNo# and T.rownum <![CDATA[ <= ]]> #endNo#
+    </select>
+
+    <select id="countForPaginateSZQuit" resultClass="integer">
+        SELECT
+        count(1)
+        <isParameterPresent>
+            <include refid="paginateWhereSZQuit" />
+        </isParameterPresent>
+    </select>
+
+    <sql id="paginateWhereSHNew">
+        FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+        LEFT JOIN dbo.T_OMS_SI_BATCH_INFO sbi WITH(NOLOCK) ON sb.batchId = sbi.batchId
+        <dynamic prepend="where">
+            sb.status = 1
+            <isNotEmpty property="shNewSearch.batchId">
+                AND sb.batchId = #shNewSearch.batchId#
+            </isNotEmpty>
+            <isNotEmpty property="shNewSearch.keyword">
+                AND (sb.userCode like '%'+ #shNewSearch.keyword# +'%' or sb.userName like '%'+ #shNewSearch.keyword# +'%')
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+
+    <select id="queryForPaginateSHNew" resultClass="siBatch">
+        select *
+        from
+        (
+        SELECT
+        row_number() over (order by sb.createTime desc) as rownum
+        ,sb.id
+        ,sb.batchId
+        ,sb.userCode
+        ,sb.userName
+        ,sb.orgId
+        ,sb.orgName
+        ,sb.newJoinDate
+        ,CAST(sb.extraBeginDate AS DATETIME) as extraBeginDate
+        ,CAST(sb.extraEndDate AS DATETIME) as extraEndDate
+        ,sb.credentialsNo
+        ,sb.censusId
+        ,sb.censusName
+        ,sb.serialName
+        ,sb.titleLevelDegree
+        ,sb.paymentBase
+        ,sb.applyStatus
+        ,sb.failureReason
+        ,sb.comment
+        ,sb.paymentTypeId
+        ,sb.contractEnd
+        <isParameterPresent>
+            <include refid="paginateWhereSHNew"/>
+        </isParameterPresent>
+        ) as T
+        where T.rownum > #startNo# and T.rownum <![CDATA[ <= ]]> #endNo#
+    </select>
+
+    <select id="countForPaginateSHNew" resultClass="integer">
+        SELECT
+        count(1)
+        <isParameterPresent>
+            <include refid="paginateWhereSHNew" />
+        </isParameterPresent>
+    </select>
+
+    <sql id="paginateWhereSHQuit">
+        FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+        LEFT JOIN dbo.T_OMS_SI_BATCH_INFO sbi WITH(NOLOCK) ON sb.batchId = sbi.batchId
+        <dynamic prepend="where">
+            sb.status = 1
+            <isNotEmpty property="shQuitSearch.batchId">
+                AND sb.batchId = #shQuitSearch.batchId#
+            </isNotEmpty>
+            <isNotEmpty property="shQuitSearch.keyword">
+                AND (sb.userCode like '%'+ #shQuitSearch.keyword# +'%' or sb.userName like '%'+ #shQuitSearch.keyword# +'%')
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+
+    <select id="queryForPaginateSHQuit" resultClass="siBatch">
+        select *
+        from
+        (
+        SELECT
+        row_number() over (order by sb.createTime desc) as rownum
+        ,sb.id
+        ,sb.batchId
+        ,sb.userCode
+        ,sb.userName
+        ,sb.orgId
+        ,sb.orgName
+        ,sb.newJoinDate
+        ,sb.extraBeginDate
+        ,sb.extraEndDate
+        ,sb.credentialsNo
+        ,sb.censusId
+        ,sb.censusName
+        ,sb.serialName
+        ,sb.titleLevelDegree
+        ,sb.paymentBase
+        ,sb.applyStatus
+        ,sb.failureReason
+        ,sb.comment
+        ,sb.paymentTypeId
+        ,sb.contractEnd
+        <isParameterPresent>
+            <include refid="paginateWhereSHQuit"/>
+        </isParameterPresent>
+        ) as T
+        where T.rownum > #startNo# and T.rownum <![CDATA[ <= ]]> #endNo#
+    </select>
+
+    <select id="countForPaginateSHQuit" resultClass="integer">
+        SELECT
+        count(1)
+        <isParameterPresent>
+            <include refid="paginateWhereSHQuit" />
+        </isParameterPresent>
+    </select>
+
+    <insert id="batchInsert">
+      INSERT INTO dbo.T_OMS_SI_BATCH
+              ( batchId ,
+                userCode ,
+                userName ,
+                sex ,
+                newJoinDate ,
+                leaveDate ,
+                orgId ,
+                orgName ,
+                levelId ,
+                serialName ,
+                titleLevelDegree ,
+                credentialsNo ,
+                censusId ,
+                censusName ,
+                censusAddr ,
+                paymentTypeId ,
+                paymentBase ,
+                applyStatus ,
+                comment ,
+                failureReason ,
+                extraBeginDate ,
+                extraEndDate ,
+                contractEnd ,
+                requireDate ,
+                status ,
+                sort ,
+                createTime ,
+                creator ,
+                updateTime ,
+                updator
+              )
+      SELECT   #batchId# ,
+                #userCode# ,
+                b.userNameCn ,
+                sex ,
+                newJoinDate ,
+                leaveDate ,
+                orgId ,
+                o.orgName ,
+                levelId ,
+                s.serialName ,
+                Cast(t.titleDegree AS VARCHAR(1)) + '-' + Cast(l.levelDegree AS VARCHAR(10)) AS titleLevelDegree,
+                credentialsNo ,
+                d.census ,
+                c.name ,
+                d.accountLocation ,
+                #paymentTypeId# ,
+                #paymentBase# ,
+                1 ,
+                NULL ,
+                NULL ,
+                CONVERT(VARCHAR(10), #extraBeginDate#,120) ,
+                CONVERT(VARCHAR(10), #extraEndDate#,120) ,
+                #contractEnd# ,
+                #requireDate# ,
+                1 ,
+                1 ,
+                GETDATE() ,
+                #creator# ,
+                GETDATE() ,
+                #creator#
+         FROM dbo.T_OMS_EMPLOYEE_BASEINFOR b WITH(NOLOCK)
+         LEFT JOIN dbo.T_OMS_EMPLOYEE_DETAILS d WITH(NOLOCK) ON d.userCode = b.userCode
+         LEFT JOIN dbo.T_OMS_CENSUS c WITH(NOLOCK) ON c.id = d.census
+         LEFT JOIN dbo.T_OMS_ORGANIZATION o WITH(NOLOCK) ON b.orgId = O.id
+         LEFT JOIN dbo.T_OMS_TITLE_LEVEL l WITH(NOLOCK) ON l.id = b.levelId
+         LEFT JOIN dbo.T_OMS_TITLE t WITH(NOLOCK) ON t.id = l.titleId
+         LEFT JOIN dbo.T_OMS_TITLE_SERIAL s WITH(NOLOCK) ON s.id = t.serialId
+         WHERE b.userCode = #userCode#
+    </insert>
+
+    <update id="update">
+        UPDATE dbo.T_OMS_SI_BATCH
+        SET paymentBase = #paymentBase#,
+        <isNotEmpty property="requireDate">
+            requireDate = #requireDate#,
+        </isNotEmpty>
+        <isNotEmpty property="extraBeginDate">
+            extraBeginDate = #extraBeginDate#,
+        </isNotEmpty>
+        <isNotEmpty property="extraEndDate">
+            extraEndDate = #extraEndDate#,
+        </isNotEmpty>
+        comment = #comment#,
+        applyStatus = #applyStatus#,
+        failureReason = #failureReason#,
+        updator = #updator#,
+        updateTime= GETDATE()
+        WHERE id = #id#
+    </update>
+
+    <select id="exportExcelNBNew" resultClass="excelBatchNBNew">
+          SELECT sb.id
+              ,sb.batchId
+              ,sb.userCode
+              ,sb.userName
+              ,sb.sex
+              ,sb.orgId
+              ,sb.orgName
+              ,sb.credentialsNo
+              ,CASE WHEN sb.censusId = 0 OR censusId = 4 THEN '农村'
+                    WHEN sb.censusId = 1 OR censusId = 3 THEN '城镇'
+                    ELSE '' END as censusName
+              ,sb.censusAddr
+              ,sb.paymentBase
+              ,CASE sb.applyStatus WHEN 0 THEN '失败' WHEN 1 THEN '成功'
+                    ELSE '' END as applyStatus
+              ,sb.comment
+              ,sb.failureReason
+              ,CONVERT(VARCHAR(10), sb.requireDate,120) as requireDate
+              ,CONVERT(VARCHAR(10), sbi.paymentDate,120) as paymentDate
+          FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+          LEFT JOIN dbo.T_OMS_SI_BATCH_INFO sbi WITH(NOLOCK) ON sb.batchId = sbi.batchId
+          WHERE sb.batchId = #batchId# AND sb.status = 1
+          ORDER BY sb.createTime DESC
+    </select>
+
+    <select id="exportExcelNBQuit" resultClass="excelBatchNBQuit">
+          SELECT
+               sb.userCode
+              ,sb.userName
+              ,sb.credentialsNo
+              ,CONVERT(VARCHAR(10), sbi.paymentDate,120) as paymentDate
+          FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+          LEFT JOIN dbo.T_OMS_SI_BATCH_INFO sbi WITH(NOLOCK) ON sb.batchId = sbi.batchId
+          WHERE sb.batchId = #batchId# AND sb.status = 1
+          ORDER BY sb.createTime DESC
+    </select>
+
+    <select id="exportExcelSZQuit" resultClass="excelBatchSZQuit">
+          SELECT
+               sb.userCode
+              ,sb.userName
+              ,sb.orgName
+              ,sb.credentialsNo
+              ,CONVERT(VARCHAR(10), sbi.paymentDate,120) as paymentDate
+          FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+          LEFT JOIN dbo.T_OMS_SI_BATCH_INFO sbi WITH(NOLOCK) ON sb.batchId = sbi.batchId
+          WHERE sb.batchId = #batchId# AND sb.status = 1
+          ORDER BY sb.createTime DESC
+    </select>
+
+    <select id="exportExcelSHNew" resultClass="excelBatchSHNew">
+          SELECT sb.userCode
+              ,sb.userName
+              ,sb.orgName
+              ,CONVERT(varchar(10), sb.newJoinDate, 120) AS newJoinDate
+              ,CONVERT(varchar(10), sb.extraBeginDate, 120) AS extraBeginDate
+              ,CONVERT(varchar(10), sb.extraEndDate, 120) AS extraEndDate
+              ,sb.credentialsNo
+              ,sb.censusName
+              ,sb.serialName
+              ,sb.titleLevelDegree
+              ,sb.paymentBase
+              ,CASE WHEN sb.applyStatus = 0 THEN '失败'
+                    ELSE '成功' END AS applyStatus
+              ,sb.failureReason
+              ,sb.comment
+          FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+          WHERE sb.batchId = #batchId# AND sb.status = 1
+          ORDER BY sb.createTime DESC
+    </select>
+
+    <select id="exportExcelSHQuit" resultClass="excelBatchSHQuit">
+          SELECT sb.userCode
+              ,sb.userName
+              ,sb.orgName
+              ,CONVERT(varchar(10), sb.newJoinDate, 120) AS newJoinDate
+              ,CONVERT(varchar(10), sb.leaveDate, 120) AS leaveDate
+              ,sb.credentialsNo
+              ,sb.censusAddr
+          FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+          WHERE sb.batchId = #batchId# AND sb.status = 1
+          ORDER BY sb.createTime DESC
+    </select>
+
+    <update id="confirmEnd">
+        UPDATE dbo.T_OMS_SI_BASE
+        SET endDate = CONVERT(VARCHAR(10),#paymentDate#,120)
+            ,paymentStatus = 0
+            ,updator = #updator#
+            ,updateTime = GETDATE()
+        WHERE userCode IN (
+			SELECT userCode FROM dbo.T_OMS_SI_BATCH WITH(NOLOCK)
+			WHERE batchId = #batchId# AND status = 1
+			) AND paymentStatus = 1 AND status = 1
+    </update>
+
+    <update id="confirmStart">
+        INSERT INTO dbo.T_OMS_SI_BASE
+                ( userCode ,
+                  userName ,
+                  orgId ,
+                  orgName ,
+                  newJoinDate ,
+                  serialName ,
+                  titleLevelDegree ,
+                  levelId ,
+                  credentialsNo ,
+                  censusId ,
+                  censusName ,
+                  paymentStatus ,
+                  paymentLocationId ,
+                  paymentLocationName ,
+                  paymentTypeId ,
+                  paymentTypeName ,
+                  paymentBase ,
+                  beginDate ,
+                  endDate ,
+                  status ,
+                  sort ,
+                  createTime ,
+                  creator ,
+                  updateTime ,
+                  updator
+                )
+        SELECT    sb.userCode ,
+                  b.userNameCn ,
+                  b.orgId ,
+                  o.orgName ,
+                  b.newJoinDate ,
+                  s.serialName ,
+                  CAST(t.titleDegree AS varchar) + '-' + l.levelDegree,
+                  b.levelId ,
+                  b.credentialsNo ,
+                  d.census ,
+                  c.name ,
+                  1 ,
+                  sbi.paymentLocationId ,
+                  spl.name ,
+                  sb.paymentTypeId ,
+                  spt.name ,
+                  sb.paymentBase ,
+                  CONVERT(VARCHAR(10), sbi.paymentDate,120) ,
+                  NULL ,
+                  1 ,
+                  1 ,
+                  sbi.paymentDate ,
+                  #creator# ,
+                  sbi.paymentDate ,
+                  #creator#
+            FROM dbo.T_OMS_SI_BATCH sb WITH(NOLOCK)
+            LEFT JOIN dbo.T_OMS_SI_BATCH_INFO sbi WITH(NOLOCK) ON sbi.batchId = sb.batchId
+            LEFT JOIN dbo.T_OMS_SI_PAYMENT_LOCATION spl WITH(NOLOCK) ON spl.id = sbi.paymentLocationId
+            LEFT JOIN dbo.T_OMS_SI_PAYMENT_TYPE spt WITH(NOLOCK) ON spt.id = sb.paymentTypeId
+            LEFT JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR b WITH(NOLOCK) ON b.userCode = sb.userCode
+            LEFT JOIN dbo.T_OMS_EMPLOYEE_DETAILS d WITH(NOLOCK) ON d.userCode = b.userCode
+            LEFT JOIN dbo.T_OMS_CENSUS c WITH(NOLOCK) ON c.id = d.census
+            LEFT JOIN dbo.T_OMS_ORGANIZATION o WITH(NOLOCK) ON o.id = b.orgId
+            LEFT JOIN dbo.T_OMS_TITLE_LEVEL l WITH(NOLOCK) ON l.id = b.levelId
+            LEFT JOIN dbo.T_OMS_TITLE t WITH(NOLOCK) ON t.id = l.titleId
+            LEFT JOIN dbo.T_OMS_TITLE_SERIAL s WITH(NOLOCK) ON s.id = t.serialId
+            WHERE sb.batchId = #batchId# AND sb.status = 1 AND sb.applyStatus = 1
+    </update>
+
+    <select id="queryFailureList" resultClass="siBatch">
+        SELECT userCode, paymentTypeId, paymentBase, extraBeginDate, extraEndDate
+         FROM dbo.T_OMS_SI_BATCH WITH(NOLOCK)
+         WHERE batchId = #batchId#
+                 AND applyStatus = 0
+                 AND status = 1
+    </select>
+
+</sqlMap>

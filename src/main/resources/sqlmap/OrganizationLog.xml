@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="OrganizationLog">
+
+    <insert id="insert" parameterClass="organizationLog">
+        INSERT INTO [T_OMS_ORGANIZATION_LOG]
+        ([operateType]
+        ,[id]
+        ,[parentId]
+        ,[orgCode]
+        ,[orgLongCode]
+        ,[orgName]
+        ,[orgLevel]
+        ,[orgType]
+        ,[status]
+        ,[locIndex]
+        ,[address]
+        ,[orgPhone]
+        ,[orgFax]
+        ,[updateTime]
+        ,[updator]
+        ,[createTime]
+        ,[creator]
+        ,[openDate]
+        ,[closedDate]
+        ,[eOrgName]
+        ,[manager]
+        ,[orgClass]
+        ,[eAddress]
+        ,[company]
+        ,[operator]
+        ,[operateTime]
+        ,[remark])
+        VALUES
+        (#operateType#
+        ,#id:INTEGER#
+        ,#parentId:INTEGER#
+        ,#orgCode#
+        ,#orgLongCode#
+        ,#orgName#
+        ,#orgLevel:INTEGER#
+        ,#orgType#
+        ,#status:INTEGER#
+        ,#locIndex:INTEGER#
+        ,#address#
+        ,#orgPhone:INTEGER#
+        ,#orgFax:INTEGER#
+        ,#updateTime:TIMESTAMP#
+        ,#updator:INTEGER#
+        ,#createTime:TIMESTAMP#
+        ,#creator:INTEGER#
+        ,#openDate:TIMESTAMP#
+        ,#closedDate:TIMESTAMP#
+        ,#eOrgName#
+        ,#manager:INTEGER#
+        ,#orgClass#
+        ,#eAddress#
+        ,#company:LONGVARCHAR#
+        ,#operator:INTEGER#
+        ,getdate()
+        ,#remark#
+        )
+    </insert>
+
+</sqlMap>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="RewardParameter">
+
+    <cacheModel type="MEMORY" id="parameterCache">
+        <property name="reference-type" value="SOFT"/>
+        <flushInterval hours="3"/>
+    </cacheModel>
+
+    <!-- typeKey返回对象 -->
+    <select id="findByTypeKey" parameterClass="string" resultClass="rewardParameter" cacheModel="parameterCache">
+		   		SELECT
+      [typeKey]
+      ,[typeDesc]
+      ,[optionCode]
+      ,[optionTitle]
+      ,[optionValue]
+      ,[optionResult]
+  FROM [dbo].[T_OMS_REWARD_PARAMETER]
+		WHERE status=1  AND typeKey = #typeKey#
+		ORDER BY SORT
+	</select>
+
+    <select id="findByOptionCode" resultClass="rewardParameter" cacheModel="parameterCache">
+   		SELECT [id]
+      ,[typeKey]
+      ,[typeDesc]
+      ,[optionCode]
+      ,[optionTitle]
+      ,[optionValue]
+      ,[optionResult]
+  FROM [dbo].[T_OMS_REWARD_PARAMETER]
+   		 where optionCode=#optionCode# and status=1
+   </select>
+
+  <select id="findByTypeKeyAndParentCode" resultClass="rewardParameter" cacheModel="parameterCache">
+   		SELECT [id]
+      ,[typeKey]
+      ,[typeDesc]
+      ,[optionCode]
+      ,[optionTitle]
+      ,[optionValue]
+      ,[optionResult]
+  FROM [dbo].[T_OMS_REWARD_PARAMETER]
+   		 where parentCode=#parentCode#  and typeKey=#typeKey#
+   		   and status=1
+   </select>
+    <select id="query" resultClass="rewardParameter" cacheModel="parameterCache">
+        SELECT * FROM dbo.T_OMS_REWARD_PARAMETER ORDER BY SORT and status=1
+    </select>
+
+</sqlMap>

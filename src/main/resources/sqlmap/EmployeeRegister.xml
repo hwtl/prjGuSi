@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeRegister">
+
+    <insert id="insert" parameterClass="employeeRegister">
+            INSERT INTO [dbo].[T_OMS_EMPLOYEE_REGISTER]
+            ([userCode]
+            ,[remark]
+            ,[createTime]
+            ,[creator])
+            VALUES
+            (#userCode#
+            ,#remark#
+            ,getDate()
+            ,#creator#
+            )
+    </insert>
+
+    <delete id="delete" parameterClass="integer">
+        delete from T_OMS_EMPLOYEE_REGISTER where userCode = #userCode#
+    </delete>
+
+</sqlMap>

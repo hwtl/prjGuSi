@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeWorkExper">
+  <insert id="insert">
+   insert into T_OMS_EMPLOYEE_WORK_EXPER (userCode, entryDate, departureDate, 
+      companyName, positionName, leaveReason, prover,proverTel,creator,createTime)
+    	values (#userCode#, #entryDate#, #departureDate#, 
+      #companyName:VARCHAR#, #positionName:VARCHAR#, #leaveReason:VARCHAR#, #prover:VARCHAR#, #proverTel:VARCHAR#,
+      #creator:INTEGER#, getDate() )
+  </insert>
+  <delete id="deleteByUserCode" >
+  	 DELETE FROM T_OMS_EMPLOYEE_WORK_EXPER WHERE userCode = #userCode#
+  </delete>
+  <select id="findByUserCode" resultClass="employeeWorkExper">
+  	SELECT userCode, entryDate, departureDate, companyName, positionName, leaveReason, prover    , proverTel
+  	FROM T_OMS_EMPLOYEE_WORK_EXPER  WHERE userCode= #userCode#
+  </select>
+  
+
+  
+</sqlMap>

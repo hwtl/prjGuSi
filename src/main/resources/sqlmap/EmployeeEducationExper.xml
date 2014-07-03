@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeEducationExper">
+  <insert id="insert">
+    insert into T_OMS_EMPLOYEE_EDUCATION_EXPER (userCode, degree, startDate, 
+      endDate, schoolName, department, graduation, 
+      eduLevel, creator, createTime,universityId)
+    values (#userCode#, #degree#, #startDate#, 
+      #endDate#, #schoolName:VARCHAR#, #department:VARCHAR#, #graduation:VARCHAR#, 
+      #eduLevel:VARCHAR#, #creator:INTEGER#, getDate(), #universityId#)
+  </insert>
+  
+  <delete id="deleteByUserCode">
+  	DELETE FROM T_OMS_EMPLOYEE_EDUCATION_EXPER WHERE userCode =#userCode#
+  </delete>
+
+  <select id="findByUserCode" resultClass="employeeEducationExper">
+ 	  SELECT e.eduId,e.userCode,e.degree,e.startDate,e.endDate
+ 	  ,u.id AS universityId,u.name as universityName, e.schoolName, u.great
+ 	  ,e.department,e.graduation,e.eduLevel
+ 	  FROM dbo.T_OMS_EMPLOYEE_EDUCATION_EXPER e WITH(NOLOCK)
+ 	  LEFT JOIN t_oms_university u WITH(NOLOCK) ON e.universityId = u.id
+ 	  where userCode=#userCode#
+  </select>
+
+</sqlMap>

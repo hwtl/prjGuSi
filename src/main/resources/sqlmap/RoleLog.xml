@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="RoleLog">
+    <insert id="insert">
+        INSERT INTO [T_OMS_ROLE_LOG]
+        (
+         [appId]
+        ,[roleId]
+        ,[roleName]
+        ,[roleDesc]
+        ,[status]
+        ,[creator]
+        ,[operateType]
+        )
+        select
+         appId
+        ,id
+        ,roleName
+        ,roleDesc
+        ,status
+        ,creator
+        ,#operateType#
+        from  T_OMS_ROLE
+        where id = #roleId#
+    </insert>
+
+</sqlMap>

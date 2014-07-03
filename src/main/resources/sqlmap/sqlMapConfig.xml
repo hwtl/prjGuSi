@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+    <settings
+		cacheModelsEnabled="true"
+		enhancementEnabled="true"
+		lazyLoadingEnabled="true"
+		useStatementNamespaces="true" />
+
+    <typeAlias alias="integer" type="java.lang.Integer"/>
+    <typeAlias alias="string" type="java.lang.String"/>
+    <typeAlias alias="date" type="java.util.Date"/>
+    <typeAlias alias="hashMap" type="java.util.HashMap"/>
+    <!--实体映射-->
+    <typeAlias alias="employeeBaseInfor" type="com.gusi.boms.model.EmployeeBaseInfor"/>
+    <typeAlias alias="vEmployeeBaseInfor" type="com.gusi.boms.model.VEmployeeBaseInfor"/>
+    <typeAlias alias="employeeSearch" type="com.gusi.boms.model.EmployeeSearch"/>
+    <typeAlias alias="employeeOperateHistory" type="com.gusi.boms.model.EmployeeOperateHistory"/>
+    <typeAlias alias="organization" type="com.gusi.boms.model.Organization"/>
+    <typeAlias alias="vOrganization" type="com.gusi.boms.model.VOrganization"/>
+    <typeAlias alias="organizationPhone" type="com.gusi.boms.model.OrganizationPhone"/>
+    <typeAlias alias="organizationOperateHistory" type="com.gusi.boms.model.OrganizationOperateHistory"/>
+    <typeAlias alias="organizationHeaderHistory" type="com.gusi.boms.model.OrganizationHeaderHistory"/>
+    <typeAlias alias="organizationName" type="com.gusi.boms.model.OrganizationName"/>
+    <typeAlias alias="employeePosition" type="com.gusi.boms.model.EmployeePosition"/>
+    <typeAlias alias="vEmployeePosition" type="com.gusi.boms.model.VEmployeePosition"/>
+    <typeAlias alias="employeeContractRecords" type="com.gusi.boms.model.EmployeeContractRecords"/>
+    <typeAlias alias="employeeRegister" type="com.gusi.boms.model.EmployeeRegister"/>
+    <typeAlias alias="employeeStatusRecord" type="com.gusi.boms.model.EmployeeStatusRecord"/>
+
+    <typeAlias alias="employeeChangeRecords" type="com.gusi.boms.model.EmployeeChangeRecords"/>
+    <typeAlias alias="EmployeeDetails" type="com.gusi.boms.model.EmployeeDetails"/>
+    <typeAlias alias="accountingDepartment" type="com.gusi.boms.model.AccountingDepartment"/>
+    <typeAlias alias="employeeFamily" type="com.gusi.boms.model.EmployeeFamily"/>
+    <typeAlias alias="employeeEducationExper" type="com.gusi.boms.model.EmployeeEducationExper"/>
+    <typeAlias alias="employeeTrain" type="com.gusi.boms.model.EmployeeTrain"/>
+    <typeAlias alias="employeeWorkExper" type="com.gusi.boms.model.EmployeeWorkExper"/>
+    <typeAlias alias="employeeInfoExcel" type="com.gusi.boms.model.EmployeeInfoExcel"/>
+    <typeAlias alias="employeeRewardPunishment" type="com.gusi.boms.model.EmployeeRewardPunishment"/>
+    <typeAlias alias="vemployeeRewardPunishment" type="com.gusi.boms.model.VEmployeeRewardPunishment"/>
+    <typeAlias alias="rewardParameter" type="com.gusi.boms.model.RewardParameter"/>
+
+    <typeAlias alias="parameter" type="com.gusi.boms.model.Parameter"/>
+    <typeAlias alias="organizationTree" type="com.gusi.boms.model.OrganizationTree"/>
+    <typeAlias alias="titleSerial" type="com.gusi.boms.model.TitleSerial"/>
+    <typeAlias alias="title" type="com.gusi.boms.model.Title"/>
+    <typeAlias alias="titleLevel" type="com.gusi.boms.model.TitleLevel"/>
+    <typeAlias alias="recruitment" type="com.gusi.boms.model.Recruitment"/>
+    <typeAlias alias="position" type="com.gusi.boms.model.Position"/>
+    <typeAlias alias="vPosition" type="com.gusi.boms.model.VPosition"/>
+    <typeAlias alias="organizationLog" type="com.gusi.boms.model.OrganizationLog"/>
+    <typeAlias alias="positionTitle" type="com.gusi.boms.model.PositionTitle"/>
+
+    <typeAlias alias="attachment" type="com.gusi.boms.model.Attachment"/>
+    <typeAlias alias="employeeCompany" type="com.gusi.boms.model.EmployeeCompany"/>
+
+    <!-- 权限系统相关实体 -->
+    <typeAlias alias="application" type="com.gusi.boms.model.Application"/>
+    <typeAlias alias="role" type="com.gusi.boms.model.Role"/>
+    <typeAlias alias="applicationPrivilege" type="com.gusi.boms.model.ApplicationPrivilege"/>
+    <typeAlias alias="rolePrivilege" type="com.gusi.boms.model.RolePrivilege"/>
+    <typeAlias alias="rolePosition" type="com.gusi.boms.model.RolePosition"/>
+    <typeAlias alias="roleEmployee" type="com.gusi.boms.model.RoleEmployee"/>
+    <typeAlias alias="roleOrganization" type="com.gusi.boms.model.RoleOrganization"/>
+    <typeAlias alias="applicationEmployeeAccess" type="com.gusi.boms.model.ApplicationEmployeeAccess"/>
+
+    <typeAlias alias="select" type="com.gusi.boms.model.Select"/>
+    <!--日志记录相关实体-->
+    <typeAlias alias="applicationLog" type="com.gusi.boms.model.ApplicationLog"/>
+    <typeAlias alias="roleLog" type="com.gusi.boms.model.RoleLog"/>
+    <typeAlias alias="applicationPrivilegeLOG" type="com.gusi.boms.model.ApplicationPrivilegeLOG"/>
+    <typeAlias alias="roleEmployeeLog" type="com.gusi.boms.model.RoleEmployeeLog"/>
+    <typeAlias alias="rolePositionLog" type="com.gusi.boms.model.RolePositionLog"/>
+    <typeAlias alias="roleOrganizationLog" type="com.gusi.boms.model.RoleOrganizationLog"/>
+    <typeAlias alias="rolePrivilegeLog" type="com.gusi.boms.model.RolePrivilegeLog"/>
+    
+     <!-- 离职面谈-->
+    <typeAlias alias="employeeLeaveReasons"  type="com.gusi.boms.model.EmployeeLeaveReasons"/>
+  	<typeAlias alias="employeeInterviewParameter" type="com.gusi.boms.model.EmployeeInterviewParameter"/>
+  	<typeAlias alias="employeeInterviewRecords" type="com.gusi.boms.model.EmployeeInterviewRecords"/>
+  	<typeAlias alias="employeeLeaveQuestionnaire" type="com.gusi.boms.model.EmployeeLeaveQuestionnaire"/>
+  	
+    <!-- 黑名单 -->
+  	<typeAlias alias="employeeBlackReasons" type="com.gusi.boms.model.EmployeeBlackReasons"/>
+  	<typeAlias alias="employeeBlackRecords" type="com.gusi.boms.model.EmployeeBlackRecords"/>
+
+    <!-- 人员转调 -->
+  	<typeAlias alias="organizationTransfer" type="com.gusi.boms.model.OrganizationTransfer"/>
+  	<typeAlias alias="vorganizationTransfer" type="com.gusi.boms.model.VOrganizationTransfer"/>
+  	<typeAlias alias="employeeTransfer" type="com.gusi.empTransfer.model.EmployeeTransfer"/>
+  	<typeAlias alias="vemployeeTransfer" type="com.gusi.empTransfer.dto.VEmployeeTransfer"/>
+
+  	<typeAlias alias="apiTree" type="com.gusi.boms.model.ApiTree"/>
+
+    <!-- 修改编制 -->
+    <typeAlias alias="organizationEmployeeCount" type="com.gusi.boms.model.OrganizationEmployeeCount"/>
+
+  	<sqlMap resource="sqlmap/EmployeeBlackReasons.xml"/>
+	<sqlMap resource="sqlmap/EmployeeBlackRecords.xml"/>
+	
+  	<sqlMap resource="sqlmap/EmployeeLeaveReasons.xml"/>
+	<sqlMap resource="sqlmap/EmployeeInterviewParameter.xml"/>
+	<sqlMap resource="sqlmap/EmployeeInterviewRecords.xml"/>
+	<sqlMap resource="sqlmap/EmployeeLeaveQuestionnaire.xml"/>
+    <sqlMap resource="sqlmap/EmployeeRegister.xml"/>
+    <sqlMap resource="sqlmap/EmployeeStatusRecord.xml"/>
+
+    <sqlMap resource="sqlmap/EmployeeBaseInfor.xml"/>
+    <sqlMap resource="sqlmap/EmployeeOperateHistory.xml"/>
+    <sqlMap resource="sqlmap/Organization.xml"/>
+    <sqlMap resource="sqlmap/OrganizationPhone.xml"/>
+    <sqlMap resource="sqlmap/OrganizationOperateHistory.xml"/>
+    <sqlMap resource="sqlmap/OrganizationHeaderHistory.xml"/>
+    <sqlMap resource="sqlmap/OrganizationName.xml"/>
+    <sqlMap resource="sqlmap/EmployeePosition.xml"/>
+    <sqlMap resource="sqlmap/EmployeeContractRecords.xml"/>
+    <sqlMap resource="sqlmap/EmployeeRewardPunishment.xml"/>
+    <sqlMap resource="sqlmap/RewardParameter.xml"/>
+
+    <sqlMap resource="sqlmap/AccountingDepartment.xml"/>
+    <sqlMap resource="sqlmap/EmployeeDetails.xml"/>
+    <sqlMap resource="sqlmap/EmployeeWorkExper.xml"/>
+    <sqlMap resource="sqlmap/EmployeeEducationExper.xml"/>
+    <sqlMap resource="sqlmap/EmployeeFamily.xml"/>
+    <sqlMap resource="sqlmap/EmployeeTrain.xml"/>
+    <sqlMap resource="sqlmap/EmployeeChangeRecords.xml"/>
+    <sqlMap resource="sqlmap/EmployeeInfoExcel.xml"/>
+    <sqlMap resource="sqlmap/Parameter.xml"/>
+    <sqlMap resource="sqlmap/OrganizationTree.xml"/>
+    <sqlMap resource="sqlmap/TitleSerial.xml"/>
+    <sqlMap resource="sqlmap/Title.xml"/>
+    <sqlMap resource="sqlmap/TitleLevel.xml"/>
+    <sqlMap resource="sqlmap/Recruitment.xml"/>
+    <sqlMap resource="sqlmap/Position.xml"/>
+    <sqlMap resource="sqlmap/OrganizationLog.xml"/>
+    <sqlMap resource="sqlmap/PositionTitle.xml"/>
+    <sqlMap resource="sqlmap/Attachment.xml"/>
+
+    <!-- 权限系统相关XML -->
+	<sqlMap resource="sqlmap/Application.xml"/>
+	<sqlMap resource="sqlmap/Role.xml"/>
+	<sqlMap resource="sqlmap/ApplicationPrivilege.xml"/>
+	<sqlMap resource="sqlmap/RolePrivilege.xml"/>
+	<sqlMap resource="sqlmap/RolePosition.xml"/>
+	<sqlMap resource="sqlmap/RoleEmployee.xml"/>
+	<sqlMap resource="sqlmap/RoleOrganization.xml"/>
+	<sqlMap resource="sqlmap/ApplicationEmployeeAccess.xml"/>
+	<sqlMap resource="sqlmap/EmployeeCompany.xml"/>
+
+	<sqlMap resource="sqlmap/Select.xml"/>
+
+    <!-- 日志记录相关XML -->
+    <sqlMap resource="sqlmap/ApplicationLog.xml"/>
+    <sqlMap resource="sqlmap/RoleLog.xml"/>
+    <sqlMap resource="sqlmap/ApplicationPrivilegeLOG.xml"/>
+    <sqlMap resource="sqlmap/RoleEmployeeLog.xml"/>
+    <sqlMap resource="sqlmap/RolePositionLog.xml"/>
+    <sqlMap resource="sqlmap/RolePrivilegeLog.xml"/>
+    <sqlMap resource="sqlmap/RoleOrganizationLog.xml"/>
+    <!-- 人员转调 -->
+    <sqlMap resource="sqlmap/OrganizationTransfer.xml"/>
+
+    <sqlMap resource="sqlmap/ApiTree.xml"/>
+    <sqlMap resource="sqlmap/LevelInfo.xml"/>
+
+    <sqlMap resource="sqlmap/OrganizationEmployeeCount.xml" />
+
+    <!--移动通讯录相关开始-->
+    <typeAlias alias="appEmployee" type="com.gusi.app.model.AppEmployee" />
+    <typeAlias alias="vAppEmployee" type="com.gusi.app.model.VAppEmployee" />
+    <typeAlias alias="appOrganization" type="com.gusi.app.model.AppOrganization" />
+    <sqlMap resource="sqlmap/app/AppEmployee.xml"/>
+    <sqlMap resource="sqlmap/app/AppOrganization.xml"/>
+    <!--移动通讯录相关结束-->
+
+    <!--员工密码信息-->
+    <sqlMap resource="sqlmap/EmployeePasswordInfo.xml" />
+     
+     <typeAlias alias="beforeJobInfo" type="com.gusi.boms.model.BeforeJobInfo"/>
+    <!-- 岗前预计报到日期 -->
+    <sqlMap resource="sqlmap/BeforeJobInfo.xml"/>
+    
+    <!--员工转调相关    -->
+    <sqlMap resource="sqlmap/empTransfer/EmpTransferOrg.xml" />
+    <sqlMap resource="sqlmap/empTransfer/EmpTransferEmp.xml" />
+    <sqlMap resource="sqlmap/empTransfer/EmployeeTransfer.xml"/>
+    <sqlMap resource="sqlmap/empTransfer/EmployeeTransferTaskStatus.xml"/>
+
+    <!--组织组数-->
+    <sqlMap resource="sqlmap/OrganizationOrgCount.xml"/>
+
+    <sqlMap resource="sqlmap/EmpToSendMsg.xml"/>
+
+    <sqlMap resource="sqlmap/SimpleOrg.xml"/>
+
+    <!--百强高校-->
+    <sqlMap resource="sqlmap/School.xml"/>
+    <sqlMap resource="sqlmap/Country.xml"/>
+    <sqlMap resource="sqlmap/EmployeeTag.xml"/>
+
+    <!--社保相关-->
+    <sqlMap resource="sqlmap/si/SelfPay.xml"/>
+    <sqlMap resource="sqlmap/si/SIBaseInfo.xml"/>
+    <sqlMap resource="sqlmap/si/SIChangeDetail.xml"/>
+    <sqlMap resource="sqlmap/si/SIBaseType.xml"/>
+    <sqlMap resource="sqlmap/si/SIBatch.xml"/>
+    <sqlMap resource="sqlmap/si/SIBatchInfo.xml"/>
+
+    <sqlMap resource="sqlmap/api/BlogEmpArchives.xml"/>
+
+</sqlMapConfig>

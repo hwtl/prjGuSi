@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="EmployeeTransfer">
+
+    <typeAlias alias="vemployeeTransfer" type="com.gusi.empTransfer.dto.VEmployeeTransfer"/>
+
+    <insert id="insertAndReturnId" parameterClass="employeeTransfer">
+        INSERT INTO [dbo].[T_OMS_EMPLOYEE_TRANSFER]
+        ([userCode]
+        ,[transferNo]
+        ,[transferType]
+        ,[transferState]
+        ,[newOrgId]
+        ,[newLevelId]
+        ,[newPositionId]
+        ,[newTitle]
+        ,[createTime]
+        ,[creator]
+        ,[oldOrgId]
+        ,[oldLevelId]
+        ,[oldPositionId]
+        ,[oldTitle]
+        )
+        VALUES
+        (#userCode#
+        ,#transferNo#
+        ,#transferType#
+        ,#transferState#
+        ,#newOrgId#
+        ,#newLevelId#
+        ,#newPositionId#
+        ,#newTitle#
+        ,#createTime#
+        ,#creator#
+        ,#oldOrgId#
+        ,#oldLevelId#
+        ,#oldPositionId#
+        ,#oldTitle#
+        )
+        <selectKey resultClass="integer" keyProperty="id">
+            SELECT
+            @@IDENTITY AS id
+        </selectKey>
+    </insert>
+
+    <update id="update">
+        UPDATE [T_OMS_EMPLOYEE_TRANSFER]
+        <dynamic prepend="SET">
+            <isNotNull property="userCode" prepend=",">
+                [userCode] = #userCode#
+            </isNotNull>
+            <isNotNull property="transferType" prepend=",">
+                [transferType] = #transferType#
+            </isNotNull>
+            <isNotNull property="transferState" prepend=",">
+                [transferState] = #transferState#
+            </isNotNull>
+            <isNotNull property="newOrgId" prepend=",">
+                [newOrgId] = #newOrgId#
+            </isNotNull>
+            <isNotNull property="newLevelId" prepend=",">
+                [newLevelId] = #newLevelId#
+            </isNotNull>
+            <isNotNull property="newPositionId" prepend=",">
+                [newPositionId] = #newPositionId#
+            </isNotNull>
+            <isNotNull property="newTitle" prepend=",">
+                [newTitle] = #newTitle#
+            </isNotNull>
+            <isNotNull property="updator" prepend=",">
+                [updator] = #updator#
+            </isNotNull>
+            <isNotNull property="updateTime" prepend=",">
+                [updateTime] = #updateTime#
+            </isNotNull>
+            <isNotNull property="oldOrgId" prepend=",">
+                [oldOrgId] = #oldOrgId#
+            </isNotNull>
+            <isNotNull property="oldLevelId" prepend=",">
+                [oldLevelId] = #oldLevelId#
+            </isNotNull>
+            <isNotNull property="oldPositionId" prepend=",">
+                [oldPositionId] = #oldPositionId#
+            </isNotNull>
+            <isNotNull property="oldTitle" prepend=",">
+                [oldTitle] = #oldTitle#
+            </isNotNull>
+        </dynamic>
+        WHERE id = #id#
+    </update>
+
+    <update id="hrUpdate">
+        UPDATE [T_OMS_EMPLOYEE_TRANSFER]
+        <dynamic prepend="SET">
+            <isNotNull property="newLevelId" prepend=",">
+                [newLevelId] = #newLevelId#
+            </isNotNull>
+            <isNotNull property="newPositionId" prepend=",">
+                [newPositionId] = #newPositionId#
+            </isNotNull>
+            <isNotNull property="newTitle" prepend=",">
+                [newTitle] = #newTitle#
+            </isNotNull>
+            <isNotNull property="updator" prepend=",">
+                [updator] = #updator#
+            </isNotNull>
+            <isNotNull property="updateTime" prepend=",">
+                [updateTime] = #updateTime#
+            </isNotNull>
+        </dynamic>
+        WHERE id = #id#
+    </update>
+
+
+    <insert id="insertProcess">
+        insert into T_OMS_EMPLOYEE_TRANSFER_PROCESS(id, fangyuanStatus, keyuanStatus)
+        values(#id# , #fangyuanStatus# , #keyuanStatus#)
+    </insert>
+
+    <update id="updateProcess">
+        update T_OMS_EMPLOYEE_TRANSFER_PROCESS
+        set fangyuanStatus = #fangyuanStatus#
+        ,keyuanStatus = #keyuanStatus#
+        where id = #id#
+    </update>
+
+    <update id="updateApprovalStatus">
+        update T_OMS_EMPLOYEE_TRANSFER
+        set approvalStatus = #approvalStatus#
+        where id = #id#
+    </update>
+
+    <update id="updateApprovalStatusToComplete">
+        update T_OMS_EMPLOYEE_TRANSFER
+        set approvalStatus = 3
+        , activeDate = getdate()
+        where id = #id#
+    </update>
+
+    <update id="updateFangyuanStatus">
+        update T_OMS_EMPLOYEE_TRANSFER_PROCESS
+        set fangyuanStatus = 2
+        where id = #id#
+    </update>
+
+    <update id="updateKeyuanStatus">
+        update T_OMS_EMPLOYEE_TRANSFER_PROCESS
+        set keyuanStatus = 2
+        where id = #id#
+    </update>
+
+    <select id="findById" resultClass="employeeTransfer">
+        select * from T_OMS_EMPLOYEE_TRANSFER where id = #id#
+    </select>
+
+    <select id="findByUserCode" resultClass="vemployeeTransfer">
+        select top 1 * from v2_employee_transfer
+            where userCode = #userCode# and taskName = #taskName# and status = 1
+    </select>
+
+    <select id="findViewById" resultClass="vemployeeTransfer">
+       select * from v2_employee_transfer where id = #id#
+    </select>
+
+    <select id="findProcessById" resultClass="employeeTransfer">
+       select * from T_OMS_EMPLOYEE_TRANSFER_PROCESS where id = #id#
+    </select>
+
+    <select id="isTransfering" parameterClass="integer" resultClass="integer">
+        select count(1) from [T_OMS_EMPLOYEE_TRANSFER]
+        where status = 1
+        and approvalStatus in (1,2,4,5)
+        and userCode = #userCode#
+    </select>
+
+    <select id="queryForPaginate" resultClass="vemployeeTransfer">
+   	  mst_sp_pageshowex4 '$columns$','$table$','$where$','$orderBy$',$pageSize$,$pageNo$
+    </select>
+    <select id="count2" resultClass="integer">
+        sp_pagecount '$table$','$where$'
+    </select>
+
+    <update id="destroy">
+        update T_OMS_EMPLOYEE_TRANSFER set approvalStatus = -1 where id = #id#
+    </update>
+
+    <update id="delete">
+        update T_OMS_EMPLOYEE_TRANSFER set status = -1 where id = #id#
+    </update>
+
+</sqlMap>

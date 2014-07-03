@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="SIBaseType">
+
+    <typeAlias alias="siBaseType" type="com.gusi.socialInsurance.model.SIBaseType"/>
+    <typeAlias alias="siPaymentBase" type="com.gusi.socialInsurance.model.SIPaymentBase"/>
+
+    <cacheModel type="MEMORY" id="commonCache">
+        <property name="reference-type" value="SOFT"/>
+        <flushInterval hours="3"/>
+    </cacheModel>
+
+    <select id="queryPaymentLocationList" resultClass="siBaseType" cacheModel="commonCache">
+        SELECT id, name FROM dbo.T_OMS_SI_PAYMENT_LOCATION WITH(NOLOCK)
+    </select>
+
+    <select id="queryCensusList" resultClass="siBaseType" cacheModel="commonCache">
+          SELECT id,name FROM dbo.T_OMS_CENSUS WITH(NOLOCK)
+    </select>
+
+    <select id="queryPaymentBaseList" resultClass="siPaymentBase" cacheModel="commonCache">
+        SELECT id,paymentBase,status,selfPayFlag FROM dbo.T_OMS_SI_PAYMENT_BASE WITH(NOLOCK)
+    </select>
+
+</sqlMap>

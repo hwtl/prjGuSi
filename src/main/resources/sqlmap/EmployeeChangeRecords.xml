@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeChangeRecords">
+		<insert id="insertAndReturnId">
+		 insert into T_OMS_EMPLOYEE_CHANGE_RECORDS (userCode, changeType, oldStatus, 
+		      newStatus, oldOrgName, newOrgName, oldOrgId, 
+		      newOrgId,oldPositionId, 
+		      newPositionId, oldPositionName, newPositionName, 
+		      oldSerialId, newSerialId, oldSerialName, newSerialName, 
+		      oldTitleDegree, newTitleDegree, oldLevelRank, newLevelRank, 
+		      oldTitleLevelFullName, newTitleLevelFullName, oldTitleId, 
+		      newTitleId, oldLevelId, newLevelId, leaveDate, 
+		      leaveType, leaveReason, activeDate, status, 
+		      creator, createTime
+     	 )
+    values ( #userCode:INTEGER#, #changeType:VARCHAR#, #oldStatus:VARCHAR#, 
+		      #newStatus:VARCHAR#, #oldOrgName:VARCHAR#, #newOrgName:VARCHAR#, #oldOrgId:INTEGER#, 
+		      #newOrgId:INTEGER#, #oldPositionId:INTEGER#, 
+		      #newPositionId:INTEGER#, #oldPositionName:VARCHAR#, #newPositionName:VARCHAR#, 
+		      #oldSerialId:INTEGER#, #newSerialId:INTEGER#, #oldSerialName:VARCHAR#, #newSerialName:VARCHAR#, 
+		      #oldTitleDegree:INTEGER#, #newTitleDegree:INTEGER#, #oldLevelRank:VARCHAR#, #newLevelRank:VARCHAR#, 
+		      #oldTitleLevelFullName:VARCHAR#, #newTitleLevelFullName:VARCHAR#, #oldTitleId:INTEGER#, 
+		      #newTitleId:INTEGER#, #oldLevelId:INTEGER#, #newLevelId:INTEGER#, #leaveDate:TIMESTAMP#, 
+		      #leaveType:VARCHAR#, #leaveReason:VARCHAR#, #activeDate:TIMESTAMP#, #status:INTEGER#, 
+		      #creator:INTEGER#, getDate()
+		      )
+            <selectKey resultClass="integer" keyProperty="changeId">
+                SELECT @@IDENTITY AS changeId
+            </selectKey>
+		</insert>
+		<!-- 异动记录生效 -->
+		<update id="updateValid">
+			update T_OMS_EMPLOYEE_CHANGE_RECORDS  set status=1 ,updateTime=getDate()
+				 where changeId=#changeId# and status=0
+		</update>
+		<!-- 删除未生效的移动记录 -->
+		<update id="doDelete">
+			update T_OMS_EMPLOYEE_CHANGE_RECORDS  set status=-1 ,updateTime=getDate(),updator=#updator#
+			 where changeId=#changeId# and status=0
+		</update>
+		<!--回滚删除 -->
+		<update id="updateInvalid">
+			update T_OMS_EMPLOYEE_CHANGE_RECORDS  set status=-2 ,updateTime=getDate(),updator=#updator#
+			 where changeId=#changeId# and status=1
+		</update>
+		<!-- 查找最后一次生效的异动记录 -->
+		<select id="findLastActiveChangeId" resultClass="int">
+			SELECT  TOP 1 changeId  FROM dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS 
+  					 WHERE userCode=#userCode# AND status=1 
+  					 ORDER BY activeDate DESC,createTime desc
+		</select>
+		
+		<!-- 统计此人生效异动记录的数量 -->
+		<select id="countActiveChanges" resultClass="int">
+			SELECT  count(1)  FROM dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS 
+  					 WHERE userCode=#userCode# AND status=1 
+		</select>		
+		<!-- 查找用于异动生效job的记录 -->
+		<select id="findChangesForActive" resultClass="employeeChangeRecords">
+		  SELECT changeId,userCode,changeType,newStatus,newLevelId,newOrgId,newPositionId,newSerialId,newTitleId,
+			  newLevelRank,activeDate,leaveDate,leaveReason,leaveType,status,oldOrgId
+			   FROM dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS WHERE status=0 and getDate() > activeDate
+		</select>
+		<!-- 只有一行的异动记录回滚 -->
+		<select id="findForOnlyOneRollback" resultClass="employeeChangeRecords">
+		 SELECT *
+			   FROM dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS WHERE   changeId =#changeId# AND status=1
+		</select>
+		<!-- 查找异动记录 -->
+		<select id="findById" resultClass="employeeChangeRecords">
+		 	SELECT changeId,userCode,changeType
+		 	FROM dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS WHERE   changeId =#changeId# AND status=1
+		</select>
+		
+		<!-- 查找用于回滚的记录 ，重新执行的记录 -->
+		<select id="findForRollback" resultClass="employeeChangeRecords">
+		 SELECT top 1  changeId,userCode,changeType,newStatus,newLevelId,newOrgId,newPositionId,newSerialId,newTitleId,
+			  newLevelRank,activeDate,leaveDate,leaveReason,leaveType,status,oldOrgId
+			   FROM dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS WHERE  userCode=#userCode# AND status=1 AND changeId !=#changeId#
+   				ORDER BY activeDate DESC,createTime desc
+		</select>
+		
+		<!-- 根据工号查询异动记录 -->
+	    <select id="findByUserCode" resultClass="employeeChangeRecords">
+	    	SELECT c.changeId,c.userCode,c.activeDate,c.leaveDate,c.leaveReason,c.leaveType
+				 ,c.newSerialName,c.oldSerialName,c.newOrgName,c.oldOrgName,c.status,c.changeType,
+				 c.newPositionName,c.oldPositionName,c.newStatus,c.oldStatus,c.updateTime,c.createTime,
+				 c.oldTitleLevelFullName,c.newTitleLevelFullName,eb.userNameCn AS creatorName,u.userNameCn as updatorName
+				 ,c.creator
+			  FROM dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS c
+			  LEFT JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR eb ON c.creator=eb.userCode
+			  LEFT JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR u ON c.updator=u.userCode
+		 	WHERE c.userCode=#userCode#  AND c.status  in (0,1,-2) ORDER BY c.activeDate desc,c.createTime desc
+	    </select>
+	    
+	    <!-- 根据工号查询正常的异动记录 -->
+	    <select id="findNormalRecordsByUserCode" resultClass="employeeChangeRecords">
+	    	SELECT c.changeId,c.userCode,c.activeDate,c.leaveDate,c.leaveReason,c.leaveType
+				 ,c.newSerialName,c.oldSerialName,c.newOrgName,c.oldOrgName,c.status,c.changeType,
+				 c.newPositionName,c.oldPositionName,c.newStatus,c.oldStatus,c.updateTime,c.createTime,
+				 c.oldTitleLevelFullName,c.newTitleLevelFullName,eb.userNameCn AS creatorName,u.userNameCn as updatorName
+			  FROM dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS c
+			  LEFT JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR eb ON c.creator=eb.userCode
+			  LEFT JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR u ON c.updator=u.userCode
+		 	WHERE c.userCode=#userCode#  AND c.status  in (1) ORDER BY c.activeDate desc,c.createTime desc
+	    </select>
+	    
+	    <!-- 是否可以新增异动 -->
+	    <select id="canAddChanges" resultClass="int">
+	    	select count(1) from T_OMS_EMPLOYEE_CHANGE_RECORDS WHERE userCode=#userCode# and status=0
+	    </select>
+	    <!-- 用于新增异动 详情-->
+	    <select id="findForAddChanges" resultClass="employeeChangeRecords">
+		     SELECT eb.userCode,eb.status AS newStatus,o.orgName AS newOrgName,eb.orgId AS newOrgId,
+		    	eb.positionId AS newPositionId,p.positionName AS newPositionName,s.id AS newSerialId,
+		     s.serialName AS newSerialName,t.titleDegree AS newTitleDegree,
+		     tl.levelDegree AS newLevelRank,t.id AS newTitleId,tl.id AS newLevelId ,tl.levelName AS newTitleLevelFullName
+		     FROM dbo.T_OMS_EMPLOYEE_BASEINFOR eb
+				INNER JOIN dbo.T_OMS_ORGANIZATION o ON eb.orgId=o.id
+				INNER JOIN dbo.T_OMS_POSITION p ON eb.positionId=p.id
+				INNER JOIN dbo.T_OMS_TITLE_LEVEL tl ON tl.id=eb.levelId
+				INNER JOIN dbo.T_OMS_TITLE t ON tl.titleId=t.id
+				INNER JOIN dbo.T_OMS_TITLE_SERIAL s ON s.id=t.serialId
+		 	WHERE eb.userCode=#userCode#
+	    </select>
+	    
+	    <!-- 用于离职异动新增 -->
+	    <select id="findForNewLeave" resultClass="employeeChangeRecords">
+	     SELECT eb.userCode,eb.status AS oldStatus,#changeType# as changeType,
+		 o.orgName AS oldOrgName,o.orgName AS newOrgName,
+		 eb.orgId AS oldOrgId,eb.orgId AS newOrgId,
+		 eb.userTitle AS oldUserTitle,eb.userTitle AS newUserTitle,
+		 eb.positionId AS oldPositionId,eb.positionId AS newPositionId,
+		 p.positionName AS oldPositionName,p.positionName AS newPositionName,
+		 s.id AS oldSerialId,s.id AS newSerialId,s.serialName AS oldSerialName,s.serialName AS newSerialName,
+		 t.titleDegree AS oldTitleDegree,t.titleDegree AS newTitleDegree,tl.levelDegree AS oldLevelRank,tl.levelDegree AS newLevelRank,
+		 CONVERT(VARCHAR(15),t.titleDegree)+'-'+tl.levelDegree+' '+tl.levelName AS oldTitleLevelFullName,
+		 CONVERT(VARCHAR(15),t.titleDegree)+'-'+tl.levelDegree+' '+tl.levelName AS newTitleLevelFullName,
+		 t.id AS oldTitleId,t.id AS newTitleId,tl.id AS oldLevelId,tl.id AS newLevelId,#leaveType# as leaveType,
+		 #leaveReason# as leaveReason,#activeDate# as activeDate,#leaveDate# as leaveDate
+		 FROM dbo.T_OMS_EMPLOYEE_BASEINFOR eb
+		INNER JOIN dbo.T_OMS_ORGANIZATION o ON eb.orgId=o.id
+		INNER JOIN dbo.T_OMS_POSITION p ON eb.positionId=p.id
+		INNER JOIN dbo.T_OMS_TITLE_LEVEL tl ON tl.id=eb.levelId
+		INNER JOIN dbo.T_OMS_TITLE t ON tl.titleId=t.id
+		INNER JOIN dbo.T_OMS_TITLE_SERIAL s ON s.id=t.serialId
+		 WHERE eb.userCode=#userCode# 
+	    </select>
+	    <!--用于离职之外的异动处理  -->
+	    <select id="findNewChangesToProcess" resultClass="employeeChangeRecords">
+	    	  SELECT * FROM 
+				  (
+					(SELECT #changeType# as changeType,#activeDate# as activeDate,#leaveDate# as leaveDate,eb.userCode,
+						eb.status AS oldStatus,eb.status as newStatus,o.orgName AS oldOrgName,eb.orgId AS oldOrgId,
+						eb.positionId AS oldPositionId,p.positionName AS oldPositionName,
+					 s.id AS oldSerialId,s.serialName AS oldSerialName,t.titleDegree AS oldTitleDegree,
+					 tl.levelDegree AS oldLevelRank, CONVERT(VARCHAR(15),t.titleDegree)+'-'+tl.levelDegree+' '+tl.levelName AS oldTitleLevelFullName,
+					 t.id AS oldTitleId,tl.id AS oldLevelId
+					 FROM dbo.T_OMS_EMPLOYEE_BASEINFOR eb
+					INNER JOIN dbo.T_OMS_ORGANIZATION o ON eb.orgId=o.id
+					INNER JOIN dbo.T_OMS_POSITION p ON eb.positionId=p.id
+					INNER JOIN dbo.T_OMS_TITLE_LEVEL tl ON tl.id=eb.levelId
+					INNER JOIN dbo.T_OMS_TITLE t ON tl.titleId=t.id
+					INNER JOIN dbo.T_OMS_TITLE_SERIAL s ON s.id=t.serialId	   
+					WHERE  eb.userCode=#userCode# 
+					) AS old
+					CROSS JOIN
+					 (
+						SELECT id AS newPositionId,positionName AS newPositionName FROM dbo.T_OMS_POSITION  WHERE id=#newPositionId#
+					 ) AS p
+					CROSS JOIN
+					(
+					   SELECT id AS newOrgId,orgName AS newOrgName FROM dbo.T_OMS_ORGANIZATION WHERE id=#newOrgId# 
+					) AS  org
+					CROSS JOIN
+					(	
+					  SELECT  s.id AS newSerialId,s.serialName AS newSerialName,t.titleDegree AS newTitleDegree,
+						 tl.levelDegree AS newLevelRank, CONVERT(VARCHAR(15),t.titleDegree)+'-'+tl.levelDegree+' '+tl.levelName AS newTitleLevelFullName,
+						 t.id AS newTitleId,tl.id AS newLevelId 
+						 FROM  dbo.T_OMS_TITLE_LEVEL tl 
+						 INNER JOIN dbo.T_OMS_TITLE t ON tl.titleId=t.id
+						 INNER JOIN dbo.T_OMS_TITLE_SERIAL s ON s.id=t.serialId
+						 WHERE tl.id=#newLevelId#
+					) AS stl    
+				  )
+	    </select>
+	    <!-- 离职回滚，需要处理掉助理待交接的任务 -->
+	   <update id="updateLeaveRecords">
+	  	 UPDATE  dbo.T_OMS_EMPLOYEE_INTERVIEW_RECORDS SET status=0 WHERE userCode=#userCode# AND status=1
+	   </update>
+    
+    <update id="updateOldOrgNameByChangeIds">
+        UPDATE dbo.T_OMS_EMPLOYEE_CHANGE_RECORDS SET oldOrgName = #oldOrgName#
+        WHERE changeId IN ($changeIds$)
+    </update>
+    
+</sqlMap>

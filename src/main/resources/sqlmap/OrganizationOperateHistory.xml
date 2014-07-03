@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="OrganizationOperateHistory">
+	<insert id="insert">
+		INSERT INTO
+		[dbo].[T_OMS_ORGANIZATION_OPERATE_HISTORY]
+		([orgId]
+		,[filed]
+		,[createTime]
+		,[creator]
+		,[createName]
+		,[remark])
+		VALUES
+		(#orgId#
+		,#filed:LONGVARCHAR#
+		,getdate()
+		,#creator#
+		,#createName#
+		,#remark#)
+	</insert>
+
+	<select id="queryForListByOrgId" parameterClass="integer" resultClass="organizationOperateHistory">
+		SELECT [id]
+		,[orgId]
+		,[filed]
+		,[createTime]
+		,[creator]
+		,[createName]
+		,[remark]
+		FROM [dbo].[T_OMS_ORGANIZATION_OPERATE_HISTORY]
+		where orgId = #orgId#
+	</select>
+</sqlMap>

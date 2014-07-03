@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="RolePrivilege">
+     <!--添加权限 角色 -->
+    <insert id="insert">
+     INSERT INTO [T_OMS_ROLE_PRIVILEGE]
+           ([roleId]
+           ,[privilegeId]
+           ,[dataPrivilege])
+     VALUES
+           (#roleId#
+           ,#privilegeId#
+           ,#dataPrivilege#)
+	</insert>
+	
+	<delete id="delete">
+		delete from  T_OMS_ROLE_PRIVILEGE 
+		where roleId = #roleId#
+	</delete>
+	
+	<select id="findRolePrivilegesByRoleId" resultClass="rolePrivilege">
+		select * from T_OMS_ROLE_PRIVILEGE with(nolock) 
+		where roleId = #roleId#
+	</select>
+	
+</sqlMap>

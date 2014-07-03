@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="SIBaseInfo">
+
+    <typeAlias alias="siBaseInfo" type="com.gusi.socialInsurance.model.SIBaseInfo"/>
+    <typeAlias alias="excelBaseInfo" type="com.gusi.socialInsurance.dto.ExcelBaseInfo"/>
+
+    <sql id="paginateWhere">
+        <dynamic prepend="where">
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.paymentLocationId">
+                sb.paymentLocationId = #siBaseInfoSearch.paymentLocationId#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.orgId">
+                exists (
+                    SELECT 1 FROM dbo.T_OMS_ORGANIZATION o WITH(NOLOCK)
+                    WHERE sb.orgId = o.id and o.orgLongCode LIKE (
+                        SELECT orgLongCode FROM dbo.T_OMS_ORGANIZATION WITH(NOLOCK) WHERE id = #siBaseInfoSearch.orgId#
+                    )+'%'
+                )
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.beginDateStart">
+                sb.beginDate >= #siBaseInfoSearch.beginDateStart#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.beginDateEnd">
+                sb.beginDate <![CDATA[ < ]]> DATEADD(MONTH, 1, #siBaseInfoSearch.beginDateEnd#)
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.endDateStart">
+                sb.endDate >= #siBaseInfoSearch.endDateStart#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.endDateEnd">
+                sb.endDate <![CDATA[ < ]]> DATEADD(MONTH, 1, #siBaseInfoSearch.endDateEnd#)
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.possessSocialCard">
+                sb.possessSocialCard = #siBaseInfoSearch.possessSocialCard#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.socialCardActivateDateStart">
+                sb.socialCardActivateDate >= #siBaseInfoSearch.socialCardActivateDateStart#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.socialCardActivateDateEnd">
+                sb.socialCardActivateDate <![CDATA[ <= ]]> #siBaseInfoSearch.socialCardActivateDateEnd#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.applyFormDateStart">
+                sb.applyFormDate >= #siBaseInfoSearch.applyFormDateStart#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.applyFormDateEnd">
+                sb.applyFormDate <![CDATA[ <= ]]> #siBaseInfoSearch.applyFormDateEnd#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.applyForm">
+                sb.applyForm = #siBaseInfoSearch.applyForm#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.extraBeginDate">
+                sb.extraBeginDate >= #siBaseInfoSearch.extraBeginDate#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.extraEndDate">
+                sb.extraEndDate <![CDATA[ < ]]> DATEADD(MONTH, 1, #siBaseInfoSearch.extraEndDate#)
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.levelIds">
+                exists (
+                    SELECT 1 FROM dbo.T_OMS_EMPLOYEE_BASEINFOR b WITH(nolock)
+                    WHERE b.userCode = sb.userCode and b.levelId IN ($siBaseInfoSearch.levelIds$)
+                )
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.paymentBase">
+                sb.paymentBase = #siBaseInfoSearch.paymentBase#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.censusId">
+                sb.censusId = #siBaseInfoSearch.censusId#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.newJoinDateStart">
+                sb.newJoinDate >= #siBaseInfoSearch.newJoinDateStart#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.newJoinDateEnd">
+                sb.newJoinDate <![CDATA[ <= ]]> #siBaseInfoSearch.newJoinDateEnd#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.keyword">
+                (sb.userCode like '%'+ #siBaseInfoSearch.keyword# +'%'
+                or sb.userName like '%'+ #siBaseInfoSearch.keyword# +'%'
+                or sb.credentialsNo like '%'+ #siBaseInfoSearch.keyword# +'%' )
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.paymentStatus">
+                <isEqual compareValue="1" property="siBaseInfoSearch.paymentStatus">
+                    sb.paymentStatus = #siBaseInfoSearch.paymentStatus#
+                </isEqual>
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="siBaseInfoSearch.leave">
+            	<isEqual compareValue="0" property="siBaseInfoSearch.leave">
+	                exists (
+	                    SELECT 1 FROM dbo.T_OMS_EMPLOYEE_BASEINFOR b WITH(nolock)
+	                    WHERE b.userCode = sb.userCode and b.status IN ('正式','试用期')
+	                )
+            	</isEqual>
+            	<isEqual compareValue="1" property="siBaseInfoSearch.leave">
+	                exists (
+	                    SELECT 1 FROM dbo.T_OMS_EMPLOYEE_BASEINFOR b WITH(nolock)
+	                    WHERE b.userCode = sb.userCode and b.status IN ('离职')
+	                )
+            	</isEqual>
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+
+    <select id="queryForPaginate" resultClass="siBaseInfo">
+            select *
+            from
+            (
+                SELECT
+                row_number() over (order by sb.createTime desc) as rownum
+                ,sb.id
+                ,sb.userCode
+                ,sb.userName
+                ,sb.orgId
+                ,sb.orgName
+                ,sb.newJoinDate
+                ,sb.serialName
+                ,sb.titleLevelDegree
+                ,sb.levelId
+                ,sb.credentialsNo
+                ,sb.censusId
+                ,sb.censusName
+                ,sb.paymentStatus
+                ,sb.paymentLocationId
+                ,sb.paymentLocationName
+                ,sb.paymentTypeId
+                ,sb.paymentTypeName
+                ,sb.paymentBase
+                ,CAST(sb.beginDate AS DATETIME) as beginDate
+                ,CAST(sb.endDate AS DATETIME) as endDate
+                ,sb.possessSocialCard
+                ,sb.applyForm
+                ,CAST(sb.applyFormDate AS DATETIME) as applyFormDate
+                ,CAST(sb.extraBeginDate AS DATETIME) as extraBeginDate
+                ,CAST(sb.extraEndDate AS DATETIME) as extraEndDate
+                ,sb.comment
+                ,sb.applyFormAttachUrl
+                ,sb.attachUrl
+                ,sb.status
+                ,sb.sort
+                ,sb.createTime
+                ,sb.creator
+                ,sb.updateTime
+                ,sb.updator
+                FROM dbo.T_OMS_SI_BASE sb WITH(NOLOCK)
+                <isParameterPresent>
+                    <include refid="paginateWhere" />
+                </isParameterPresent>
+            ) as T
+            where    T.rownum > #startNo# and T.rownum <![CDATA[ <= ]]> #endNo#
+    </select>
+
+	<select id="exportExcel" resultClass="excelBaseInfo">
+		SELECT
+	         sb.paymentLocationName
+	        ,sb.userCode
+	        ,sb.userName
+	        ,sb.orgName
+	        ,CONVERT(varchar(10), sb.newJoinDate, 120) AS newJoinDate
+	        ,CONVERT(varchar(7), sb.beginDate, 120) AS beginDate
+	        ,CONVERT(varchar(7), sb.endDate, 120) AS endDate
+	        ,CONVERT(varchar(7), sb.extraBeginDate, 120) AS extraBeginDate
+	        ,CONVERT(varchar(7), sb.extraEndDate, 120) AS extraEndDate
+	        ,sb.credentialsNo
+	        ,sb.censusName
+	        ,sb.paymentBase
+	        ,sb.serialName
+	        ,sb.titleLevelDegree
+	        ,CASE WHEN sb.possessSocialCard = 0 THEN '无'
+	        	  WHEN sb.possessSocialCard = 1 THEN '有'
+	       	 END AS possessSocialCard
+	        ,CASE WHEN sb.applyForm = 0 THEN '无'
+	        	  WHEN sb.applyForm = 1 THEN '有'
+	       	 END AS applyForm
+            ,CONVERT(varchar(10), sb.applyFormDate, 120) AS applyFormDate
+	        ,sb.comment
+        FROM dbo.T_OMS_SI_BASE sb WITH(NOLOCK)
+        <isParameterPresent>
+            <include refid="paginateWhere" />
+        </isParameterPresent>
+	</select>
+
+    <select id="countForPaginate" resultClass="integer">
+        SELECT
+        count(1)
+        FROM dbo.T_OMS_SI_BASE sb WITH(NOLOCK)
+        <isParameterPresent>
+            <include refid="paginateWhere" />
+        </isParameterPresent>
+    </select>
+
+	<update id="updateSIBaseInfo">
+		UPDATE dbo.T_OMS_SI_BASE
+		SET
+		  updator = #updator#
+		, updateTime = GETDATE()
+        , applyForm = #applyForm#
+		, applyFormAttachUrl = #applyFormAttachUrl#
+		, attachUrl = #attachUrl#
+		, comment = #comment#
+		WHERE id = #id#
+	</update>
+
+	<update id="updateSIBaseFromExcel">
+		UPDATE base
+		SET
+		       base.updator = 80001
+               ,base.updateTime = GETDATE()
+		       <isNotEmpty property="applyFormDate">
+                   ,base.applyFormDate = #applyFormDate#
+		       </isNotEmpty>
+		       <isNotEmpty property="applyForm">
+                   ,base.applyForm = #applyForm#
+		       </isNotEmpty>
+		       <isNotEmpty property="possessSocialCard">
+                   ,base.possessSocialCard = #possessSocialCard#
+		       </isNotEmpty>
+		FROM   dbo.T_OMS_SI_BASE AS base
+		WHERE base.userCode = #userCode# AND paymentLocationId = 3  AND base.paymentStatus = 1
+	</update>
+
+</sqlMap>

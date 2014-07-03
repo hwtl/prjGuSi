@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmpTransferOrg">
+
+    <typeAlias alias="empTransferOrg" type="com.gusi.empTransfer.dto.EmpTransferOrg"/>
+
+    <select id="queryWithPartionOrgs" resultClass="empTransferOrg">
+        select DISTINCT o.id, o.orgName, o.orgLongCode from T_OMS_ORGANIZATION o
+        left join T_OMS_EMPLOYEE_POSITION ep on ep.orgId = o.id
+        where o.status = 1 and userCode = #userCode#
+    </select>
+
+    <select id="findById" resultClass="empTransferOrg">
+        select id, orgLongCode from T_OMS_ORGANIZATION where id = #id#
+    </select>
+
+    <select id="queryPartOrgs" resultClass="empTransferOrg">
+        SELECT orgId AS id FROM  dbo.T_OMS_EMPLOYEE_POSITION
+        WHERE userCode = #userCode# AND parttime = 1
+    </select>
+
+</sqlMap>

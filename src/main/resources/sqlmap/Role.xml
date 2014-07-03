@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Role">
+     <!--添加权限 角色 -->
+    <insert id="insertAndReturnId">
+     INSERT INTO [T_OMS_Role]
+           ([roleName]
+           ,[roleDesc]
+           ,[creator]
+           ,[appId])
+     VALUES
+           (#roleName#
+           ,#roleDesc#
+           ,#creator#
+           ,#appId#)
+        <selectKey resultClass="integer" keyProperty="id">
+            SELECT
+            @@IDENTITY AS id
+        </selectKey>
+	</insert>
+
+	<delete id="delete">
+		update T_OMS_Role set status = 0
+		where id = #id#
+	</delete>
+
+	<update id="update">
+		update T_OMS_ROLE set roleName = #roleName#, roleDesc = #roleDesc# where id = #id#
+	</update>
+
+    <!--根据系统ID获取相应的角色-->
+    <select id="findRolesByAppId" resultClass="role">
+        SELECT * FROM T_OMS_ROLE with(nolock)
+        WHERE status = 1 and appId = #appId#
+    </select>
+
+
+     <!--根据员工工号与系统ID获得该员工的所有角色-->
+    <select id="findRolesByUserCode" parameterClass="hashMap" resultClass="role">
+        SELECT r.* FROM  T_OMS_ROLE as r with(nolock)
+        inner join  T_OMS_EMPLOYEE_ROLE as er with(nolock) on r.id = er.roleId
+        WHERE er.userCode = #userCode# and r.appId = #appId#
+    </select>
+
+    <!--根据部门ID与系统ID获得该部门的所有角色-->
+    <select id="findRolesByOrgId" parameterClass="hashMap" resultClass="role">
+        SELECT r.* FROM  T_OMS_ROLE as r with(nolock)
+        inner join  T_OMS_ORGANIZATION_ROLE as er with(nolock) on r.id = er.roleId
+        WHERE er.orgId = #orgId# and r.appId = #appId#
+    </select>
+
+    <!--根据员工工号与系统ID获得该他所有有关部门的角色-->
+    <select id="findOrgRolesByUserCode" parameterClass="hashMap" resultClass="role">
+        SELECT r.* FROM  T_OMS_ROLE as r with(nolock)
+        inner join T_OMS_ORGANIZATION_ROLE as er with(nolock) on r.id = er.roleId
+        inner join T_OMS_EMPLOYEE_POSITION as p on p.orgId = er.orgId
+        WHERE p.userCode = #userCode# and r.appId = #appId#
+    </select>
+
+
+
+    <!--根据岗位ID与系统ID获得该员工的所有角色-->
+    <select id="findRolesByPositionId" parameterClass="hashMap" resultClass="role">
+        SELECT r.* FROM  T_OMS_ROLE as r with(nolock)
+        inner join  T_OMS_POSITION_ROLE as er with(nolock) on r.id = er.roleId
+        WHERE er.positionId = #positionId# and r.appId = #appId#
+    </select>
+
+      <!--根据员工工号与系统ID获得该他所有有关岗位的角色-->
+    <select id="findPositionRolesByPositionId" parameterClass="hashMap" resultClass="role">
+        SELECT r.* FROM  T_OMS_ROLE as r with(nolock)
+        inner join T_OMS_POSITION_ROLE as er with(nolock) on r.id = er.roleId
+        inner join T_OMS_EMPLOYEE_POSITION as p on p.positionId = er.positionId
+        WHERE p.userCode = #userCode# and r.appId = #appId#
+    </select>
+    
+    <select id="roleExists" resultClass="integer">
+	 SELECT COUNT(*) FROM dbo.T_OMS_ROLE WHERE id=#roleId#
+	</select>
+</sqlMap>

@@ -1,0 +1,208 @@
+<h1 class="f18">社保管理</h1>
+
+<!-- 一级导航 begin -->
+<table width="100%" cellpadding="0" cellspacing="0" class="navTab1th">
+	<tbody>
+		<tr align="center">
+			<td ng-show="$parent.privileges.hrm_si_view" class="current" width="33%"><a href="siList">社会保险</a></td>
+			<!--<td ng-show="$parent.privileges.hrm_gjj_view" width="33%"><a href="#/borrowList">公积金</a></td>
+			<td ng-show="$parent.privileges.hrm_yw_view" width="33%"><a href="#/applyList">意外保险</a></td>-->
+		</tr>
+	</tbody>
+</table>
+<!-- 一级导航 end -->
+
+<!-- 二级导航 begin -->
+<div class="navTab2th mt_15 clearfix">
+	<a href="siList">缴纳信息</a>
+	<a href="siShNewList">上海</a>
+	<a href="siNbNewList" class="current">宁波</a>
+	<a href="siSzQuitList">深圳</a>
+</div>
+<!-- 二级导航 end -->
+
+<!-- 三级导航 begin -->
+<div class="navTab3th mt_10 clearfix">
+	<a href="siNbNewList" class="current">新进</a>
+	<a href="siNbQuitList">退出</a>
+</div>
+<!-- 三级导航 end -->
+
+<!-- 业务规则说明 begin -->
+<div class="boxWrapBlue pd_10 mt_15 lineH200">
+	<p class="bold">宁波新进名单生成规则：</p>
+	<p>1、所有正式人员经纪人名单但是没有缴社保的</p>
+	<p class="ml_20">身份证号330开缴纳宁波户籍，社保基数为2447，身份证号非310、330开头社保缴纳基数1470</p>
+	<p class="ml_20">根据人力资源管理系统的员工档案信息中“户籍性质”，分辨城镇户籍和农村户籍；</p>
+	<p>2、排除所有 实习生（合同类型是实习协议）；</p>
+	<p>3、深圳外包协议到期（即合同类型为前程无忧外包协议，到了合同结束时间）正式的经纪人需从深圳退，宁波进</p>
+	<p class="ml_20">例如合同结束时间为2016-10-31（合同结束时间都是月底）的即11月的社保需从深圳退，宁波进。</p>
+</div>
+<!-- 业务规则说明 end -->
+
+<!-- 搜索条件 begin -->
+<div class="boxWrapBlue pd_10 mt_15">
+	缴纳年月及批次：
+	<span><input type="text" class="txtDate onlyMonth" date-picker readonly="readonly" ng-model="$parent.query.paymentDate" /></span>
+	<b class="ml_10 tt160 in_block mt_4">{{ query.batchId }}</b>
+	
+	关键字：
+	<input type="text" class="txtNew tt160" placeholder="工号、姓名" ng-model="query.keyword" />
+	<a href="javascript:;" class="btn-small btn-blue in_block ml_20" ng-click="search(true)">查询</a>
+
+</div>
+<!-- 搜索条件 end -->
+
+<!-- 搜索结果 begin -->
+<div class="mt_15">
+	<p class="mt_15 clearfix">
+		<span class="left"><strong class="red">{{ result.totalCount }}</strong> 个符合条件的结果</span>
+		<span class="right">
+			<a href="{{exportExcel}}" class="export_excel in_block mt_2" ng-show="$parent.privileges.hrm_si_nb_operate && query.batchId">导出数据</a>
+			<span class="green in_block mt_4 ml_10" ng-show="$parent.privileges.hrm_si_nb_operate && init.isGenerateList == 1">已拉名单</span>
+			<a href="javascript:;" class="btn-small btn-silver in_block ml_10" ng-show="$parent.privileges.hrm_si_nb_operate && init.isGenerateList == 0" ng-click="createBatch()">拉名单</a>
+			<span class="green in_block mt_4 ml_10" ng-show="$parent.privileges.hrm_si_nb_operate && batch.batchInfo.confirmStatus == 1">已确认缴纳</span>
+			<a href="javascript:;" class="btn-small btn-silver in_block ml_10" ng-show="$parent.privileges.hrm_si_nb_operate && batch.batchInfo.confirmStatus == 0" ng-click="confirmNewWarning()">确认缴纳</a>
+		</span>
+	</p>
+	<table width="1400" cellspacing="0" class="tableListNew tableNarrow mt_10" >
+		<tr class="trHead trHighHead">
+			<td width="30" nowrap>序号</td>
+			<td width="40" nowrap>工号</td>
+			<td width="100" nowrap>部门</td>
+			<td width="50" nowrap>姓名</td>
+			<td width="30" nowrap>性别</td>
+			<td width="55" nowrap>户口性质<br />(农、城)</td>
+			<td width="260" nowrap>异地地址<br />(办理异地就医用到，原则上是单位所在地)</td>
+			<td width="110" nowrap>身份证号码</td>
+			<td width="100" nowrap>联系电话</td>
+			<td width="50" nowrap>委托时间</td>
+			<td width="50" nowrap align="right">社保基数</td>
+			<td width="50" nowrap>要求参保<br />起始月份</td>
+			<td width="100" nowrap>备注</td>
+			<td width="30" nowrap>是否<br />失败</td>
+			<td width="100" nowrap>失败原因</td>
+			<td width="40" nowrap>操作</td>
+		</tr>
+		<tr ng-repeat="item in result.resultList">
+			<td>{{ $index+1}}&nbsp;</td>
+			<td>{{ item.userCode }}&nbsp;</td>
+			<td>{{ item.orgName }}&nbsp;</td>
+			<td>{{ item.userName }}&nbsp;</td>
+			<td>{{ item.sex }}&nbsp;</td>
+			<td><span ng-show="item.censusId == 1 || item.censusId == 3">城镇</span><span ng-show="item.censusId == 0 || item.censusId == 4">农村</span>&nbsp;</td>
+			<td>{{ item.companyAddr }}&nbsp;</td>
+			<td>{{ item.credentialsNo }}&nbsp;</td>
+			<td>{{ item.companyPhone }}&nbsp;</td>
+			<td>{{ item.paymentDate | date:'yyyy-MM'}}&nbsp;</td>
+			<td align="right"><ng-show="item.paymentBase">{{ item.paymentBase | number:0 }}</span>&nbsp;</td>
+			<td>{{ item.requireDate | date:'yyyy-MM' }}&nbsp;</td>
+			<td><span ng-show="item.contractEnd">深圳外包到期</span><br ng-show="item.contractEnd && item.comment" />{{ item.comment }}&nbsp;</td>
+			<td><span ng-show="item.applyStatus == 0">失败&nbsp;</td>
+			<td>{{ item.failureReason }}&nbsp;</td>
+			<td><a href="javascript:;" class="btn-small btn-silver in_block" ng-show="$parent.privileges.hrm_si_nb_operate && init.confirmStatus == 0" ng-click="edit(item, $index)">编辑</a></td>
+		</tr>
+		<tr ng-show="result.totalCount == 0">
+			<td colspan="10" class="center grey999">亲爱的伙伴，没有您查询的数据结果哦。</td>
+			<td colspan="6">&nbsp;</span>
+		</tr>
+		<tr ng-show="init.act.listLoading">
+			<td colspan="10" class="center"><img src="http://dui.dooioo.com/public/images/icon_ajaxload.gif" class="mh_auto disblock"></td>
+			<td colspan="6">&nbsp;</span>
+		</tr>
+	</table>
+</div>
+<!-- 搜索结果 end -->
+
+<!-- 翻页控件 begin -->
+<div paginator record-count="result.totalCount" page-size="result.pageSize" current-page="query.pageNo"></div>
+<!-- 翻页控件 end -->
+
+<!-- begin: 确认缴纳警示弹层 -->
+<div class="warningPop" id="layer_confirmNew">
+    <div class="warningT clearfix">
+        <p class="t">确认缴纳</p>
+    </div>
+    <div class="warningC f14 lineH200">
+        <p>是否确认<span class="red">{{ query.batchId }}</span>批次的宁波社保已缴纳？</p>
+        <p>确认后，<b>数据不可恢复</b>！</p>
+		<p>若操作有误，<b>全部责任由操作人承担</b>！</p>
+        <p class="mt_15">
+            <a href="javascript:;" class="btn-normal btn-red in_block tt280 center" ng-click="confirmNew()">确认缴纳</a>
+        </p>
+    </div>
+</div>
+<!-- end: 确认缴纳警示弹层 -->
+
+<!-- begin: 编辑弹层 -->
+<div class="popLayer bubbleBox" id="layer_edit">
+    <div class="bubbleBoxTitle clearfix">
+        <h1>编辑</h1>
+        <div class="cls"><a href="javascript:;" class="closePopBox xx" onclick="hidePopupDiv($('#layer_edit'))"></a></div>
+    </div>
+    <div class="bubbleBoxCon pd_20">
+    	<form id="editForm">
+	        <table border="0" cellpadding="0" cellspacing="0" class="tableFormNew mt_10">
+	            <tbody>
+	                <tr>
+	                    <td class="tdTitle" width="120">姓名：</td>
+	                    <td class="request" width="20">●</td>
+	                    <td>{{ params.userName }}（{{ params.userCode }}）</td>
+	                </tr>
+	                <tr>
+	                    <td class="tdTitle">社保基数：</td>
+	                    <td class="request">●</td>
+	                    <td><input type="text" class="txtNew" ng-model="params.paymentBase" name="paymentBase" rule="required integer" maxlength="9" /></td>
+	                </tr>
+	                <tr>
+	                    <td class="tdTitle">要求参保起始月份：</td>
+	                    <td class="request">●</td>
+	                    <td><span><input type="text" class="txtDate onlyMonth" date-picker readonly="readonly" ng-model="$parent.params.requireDate" name="requireDate" rule="required" /></span></td>
+	                </tr>
+	                <tr>
+	                    <td class="tdTitle">备注：</td>
+	                    <td class="request">&nbsp;</td>
+	                    <td>
+	                    	<p ng-show="item.contractEnd">深圳外包到期</p>
+	                    	<input type="text" class="txtNew tt280" maxlength="100" ng-model="params.comment" />
+	                    </td>
+	                </tr>
+	                <tr>
+	                    <td class="tdTitle">是否失败：</td>
+	                    <td class="request">●</td>
+	                    <td>
+	                    	<select ng-model="params.applyStatus" ng-options="opt.id as opt.name for opt in categories.applyStatusList" name="applyStatus" rule="required">
+							</select>
+	                    </td>
+	                </tr>
+	                <tr ng-show="params.applyStatus == 0">
+	                    <td class="tdTitle">失败原因：</td>
+	                    <td class="request">●</td>
+	                    <td><input class="txtNew tt280" ng-model="params.failureReason" maxlength="100" name="failureReason" rule="required"></textarea></td>
+	                </tr>
+	            </tbody>
+	        </table>
+	    </form>
+    </div>
+    <div class="bubbleBoxBtn">
+        <img src="http://dui.dooioo.com/public/images/loading-small.gif" class="in_block mt_5" ng-show="init.act.editLoading">
+		<input type="button" class="btn-small btn-silver in_block" onclick="hidePopupDiv($('#layer_edit'))" value="关闭" />
+		<input type="button" class="btn-small btn-blue in_block ml_5" ng-class="{disable: init.act.editDisabled}" ng-click="editSave()" ng-disabled="init.act.editDisabled" value="提交" />
+    </div>
+</div><br />
+<!-- begin: 编辑弹层 -->
+
+<!-- 拉名单弹层 begin-->
+<div class="popLayer" id="layer_ajaxing">
+	<div class="popTitle clearfix">
+		<h1>拉名单</h1>
+		<div class="cls"></div>
+	</div>
+	<div class="popCon">
+		<div class="message">
+			<img src="http://dui.dooioo.com/public/images/icon_ajaxload.gif" class="mh_auto disblock">
+			<p class="mt_20 mb_20 pb_20 f14 bold">正在生成名单，请稍候</p>
+		</div>
+	</div>
+</div>
+<!-- 拉名单弹层 end-->

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="RoleEmployee">
+     <!--添加部门与权限 的关系 -->
+    <insert id="insert">
+     INSERT INTO [T_OMS_EMPLOYEE_ROLE]
+           ([userCode]
+           ,[roleId])
+     VALUES
+           (#userCode#
+           ,#roleId#)
+	</insert>
+	
+	<delete id="delete" parameterClass="hashMap">
+		delete from T_OMS_EMPLOYEE_ROLE where userCode = #userCode# and exists (
+			select 1 from t_oms_role as r where appId = #appId# and roleId = r.id
+		)
+	</delete>
+	
+	<select id="empRoleExists" resultClass="integer">
+	  SELECT COUNT(*) FROM dbo.T_OMS_EMPLOYEE_ROLE ar WHERE ar.userCode=#userCode# AND ar.roleId=#roleId#
+	</select>
+	
+	<delete id="removeRoleForFY">
+		INSERT INTO dbo.T_OMS_EMPLOYEE_ROLE_LOG
+		        ( userCode ,roleIdStr ,creator ,operateType)		
+		SELECT userCode,CONVERT(VARCHAR(15),roleId),80001,'房源接口删除' from T_OMS_EMPLOYEE_ROLE where userCode =#userCode# and exists (
+			select 1 from t_oms_role as r where appId = 33 and roleId = r.id
+		)
+		delete from T_OMS_EMPLOYEE_ROLE where userCode = #userCode# and exists (
+			select 1 from t_oms_role as r where appId = 33 and roleId = r.id
+		)
+	</delete>
+	
+	<delete id="removeRoleForKY">
+		INSERT INTO dbo.T_OMS_EMPLOYEE_ROLE_LOG
+		        ( userCode ,roleIdStr ,creator ,operateType)		
+		SELECT userCode,CONVERT(VARCHAR(15),roleId),80001,'客源接口删除' from T_OMS_EMPLOYEE_ROLE where userCode =#userCode# and exists (
+			select 1 from t_oms_role as r where appId in (SELECT id FROM dbo.T_OMS_APPLICATION WHERE applicationCode='keyuan') and roleId = r.id
+		)
+		delete from T_OMS_EMPLOYEE_ROLE where userCode = #userCode# and exists (
+			select 1 from t_oms_role as r where appId in (
+			 SELECT id FROM dbo.T_OMS_APPLICATION WHERE applicationCode='keyuan') and roleId = r.id
+		)
+	</delete>
+</sqlMap>

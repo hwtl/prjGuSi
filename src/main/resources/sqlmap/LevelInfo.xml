@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="LevelInfo">
+    <typeAlias alias="levelInfo" type="com.gusi.boms.dto.LevelInfo"/>
+
+    <select id="queryLevelList" resultClass="levelInfo">
+       select ts.id as serialId, ts.serialName,
+        t.id as titleId, t.titleDegree, t.titleName,
+        tl.id as levelId, tl.levelDegree,tl.levelName
+        from oms..T_OMS_TITLE_LEVEL tl with(nolock)
+        inner join oms..T_OMS_TITLE t with(nolock) on tl.titleId = t.id and t.status = 1
+        inner join oms..T_OMS_TITLE_SERIAL ts with(nolock) on ts.id = t.serialId and ts.status = 1
+        where tl.status = 1
+        order by ts.id, t.titleDegree, tl.levelDegree
+    </select>
+
+    <select id="queryTitleList" resultClass="levelInfo">
+        select ts.id as serialId, ts.serialName,
+        t.id as titleId, t.titleDegree, t.titleName
+        from oms..T_OMS_TITLE t with(nolock)
+        inner join oms..T_OMS_TITLE_SERIAL ts with(nolock) on ts.id = t.serialId and ts.status = 1
+        where t.status = 1
+        order by ts.id, t.titleDegree
+    </select>
+
+    <select id="querySerialList" resultClass="levelInfo">
+        select ts.id as serialId, ts.serialName
+        from  oms..T_OMS_TITLE_SERIAL ts with(nolock)
+        where ts.status = 1
+        order by ts.id
+    </select>
+
+</sqlMap>

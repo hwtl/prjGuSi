@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="PositionTitle">
+
+    <delete id="deleteByPositionId" parameterClass="integer">
+       delete from T_OMS_POSITION_TITLE where positionId = #positionId#
+    </delete>
+
+    <select id="queryForListByPositionId" parameterClass="integer" resultClass="positionTitle">
+        select [positionId]
+        ,[titleId]
+        from [dbo].[T_OMS_POSITION_TITLE]
+        where positionId = #positionId#
+    </select>
+
+    <insert id="insertList" parameterClass="map">
+        insert into T_OMS_POSITION_TITLE (positionId, titleId)
+        values
+        <iterate conjunction="," property="titleIds">
+            (#positionId#,#titleIds[]#)
+        </iterate>
+    </insert>
+
+</sqlMap>

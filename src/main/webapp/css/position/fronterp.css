@@ -1,0 +1,52 @@
+/*****后台框架*******/
+div.container_back {width:960px; margin:0 auto; /*overflow: auto;*/}
+div.container_back .sidebarLeft{width:200px;}
+div.container_back .contentRight{width:745px;float:left;margin-left:10px;}
+#mainContainer{width:100%; }
+.p100{width:100%;}
+.w1230{width:1230px}
+.xAuto{/*overflow-x: auto*/}
+.footer_back {margin:20px 20px 30px 20px; padding:15px 0; border-top:1px solid #CCC; color:#888; text-align:center; line-height:20px}
+
+.tableListNew tr.trHead{height:32px; line-height:32px; color:#666;border-bottom: 1px solid #DDD; background:url(http://dui.dooioo.com/public/images/bg_tableListNewHead.png) repeat-x left top; padding:0 15px}
+#orgFrame a{color:#666;padding:4px}
+#orgFrame a:hover{text-decoration:none;color:#0088cc;background:#e7e7e7;border-radius:2px}
+#orgFrame a.active{color:#0088cc;}
+#orgFrame .node_switch{width:11px; height:11px; line-height:11px; text-align:center; cursor:pointer; border:solid 1px #666;margin:3px 0 0 0}
+#orgFrame .node_noswitch{width:13px; height:13px;}
+#orgFrame a.pnode{font-size:13px;font-weight:bold;margin-left:2px;line-height:13px}	
+#orgFrame .cnode{margin-left:25px}
+#orgFrame .cnode li{cursor:pointer}
+.js_rightcontent {padding-left:20px;}
+.js_rightcontent .tabwrap span.bg_del{width:16px; height:16px; margin-top:5px; background:url(/static/images/org_icon.gif) no-repeat left top}
+.js_rightcontent .tabwrap span.bg_del:hover{background:url(/static/images/org_icon.gif) no-repeat left -26px}
+.js_rightcontent .tabwrap span.active{background:url(/static/images/org_icon.gif) no-repeat left -26px}
+.js_rightcontent .navTab2th a ,.navTab2th a.current, .navTab2th a.current:hover{padding: 0 8px;}
+.js_rightcontent div.navTab2th{margin-top:0}
+/*****组织管理*****/
+.h300{height:300px;overflow-x:hidden;overflow-y:auto;}
+a.import_ppt{height: 16px;line-height: 16px;background: url(../images/ppt.png) no-repeat 0 -2px;padding: 2px 0 0 20px;}
+a.import_txt{height: 20px;line-height: 20px;background: url(../images/txt.png) no-repeat 0 0;padding: 2px 0 0 20px;display:block}
+.manageList ul{width:180px;background:#eee;margin-right:3px;height:425px;padding-top:5px}
+.manageList ul li{line-height:180%;padding:5px 10px}
+
+.orgTable td{padding:5px 0;text-align:center}
+.orgTable tr.trHead td, .orgTable tr.trHead:hover td{padding:0}
+
+.orgSortInnerTable{width:100%}
+.orgSortInnerTable td{border:none;color: #008aec;vertical-align:middle}
+.orgSortInnerTable td input{text-align:center;color:#000}
+.TreePanel_List li{background:none}
+td.pl_30{padding-left:30px}
+
+ul.chkboxList {}
+ul.chkboxList li{width:80px; float:left}
+
+
+.miniListBox {background:#d5dde6; border-radius:4px; padding:5px 3px 5px 8px; color:#333; float:left; margin:5px 5px 0 0;}
+.miniListBox a.delx, .miniListBox a.delx:hover{width:13px; height:13px; background:url(/static/images/delx.gif) no-repeat 3px 3px;margin-top:1px;}
+.miniListBox a.delx:hover {background-color:#eee;}
+
+/*个人标签*/
+span.pLabel {display:block; height:20px; line-height:20px; float:left; margin-right:5px; background:#ddd; color:#999; padding:0 5px; border-radius:2px;}
+span.pLabelOn {background:#5ea206; color:#fff;}

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="School">
+
+    <typeAlias alias="school" type="com.gusi.boms.model.School"/>
+
+    <select id="queryByName" resultClass="school">
+        SELECT
+        <isEmpty property="keyword">
+            top 10
+        </isEmpty>
+        u.id, u.name,u.great
+        ,u.provinceId, p.name AS provinceName
+        ,p.countryId, c.name AS countryName
+        FROM t_oms_UNIVERSITY u WITH(NOLOCK)
+        LEFT JOIN T_OMS_PROVINCE p WITH(NOLOCK) ON p.id = u.provinceId
+        LEFT JOIN T_OMS_COUNTRY c WITH(NOLOCK) ON c.id = p.countryId
+        <dynamic prepend="where">
+            <isNotEmpty property="keyword" prepend="and">
+                u.NAME LIKE '%' + #keyword# + '%'
+            </isNotEmpty>
+            <isNotEmpty property="countryId" prepend="and">
+                p.countryId = #countryId#
+            </isNotEmpty>
+        </dynamic>
+    </select>
+
+</sqlMap>

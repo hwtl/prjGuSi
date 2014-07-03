@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Application">
+     <!--添加权限 系统 -->
+    <insert id="insertAndReturnId">
+     INSERT INTO [T_OMS_APPLICATION]
+           ([applicationName]
+           ,[applicationCode])
+     VALUES
+           (#applicationName#
+           ,#applicationCode#)
+        <selectKey resultClass="integer" keyProperty="id">
+            SELECT
+            @@IDENTITY AS id
+        </selectKey>
+	</insert>
+
+	<delete id="delete">
+		update T_OMS_APPLICATION set status = 0
+		where id = $id$
+	</delete>
+
+    <!--根据用户获取相应的系统-->
+    <select id="findAllowApps" resultClass="application" parameterClass="map">
+        SELECT * FROM T_OMS_APPLICATION with(nolock)
+        WHERE status = 1 and ($userCode$ = #admin#
+        		or exists (select 1 from T_OMS_APPLICATION_EMPLOYEE_ACCESS with(nolock)
+					        where T_OMS_APPLICATION.id = T_OMS_APPLICATION_EMPLOYEE_ACCESS.appId
+				        	and T_OMS_APPLICATION_EMPLOYEE_ACCESS.userCode = $userCode$)
+				        	)
+    </select>
+
+</sqlMap>

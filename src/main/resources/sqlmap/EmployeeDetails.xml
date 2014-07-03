@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeDetails">
+
+			<insert id="insert">
+			INSERT INTO dbo.T_OMS_EMPLOYEE_DETAILS
+		        ( userCode ,bornDay ,lunarCalendar ,
+		         mobilePhone ,usedMailBox ,creator ,   status , birthday,showPhone,enlist,census,
+		         bornDayTime,bornMonth,bornYear, lastDegree
+		        )
+			VALUES  (#userCode# ,#bornDay# ,#lunarCalendar# ,
+		          #mobilePhone:VARCHAR# ,#usedMailBox:VARCHAR# ,#creator:INTEGER# ,  
+		           #status# , #birthday#,#showPhone#,#enlist#,#census#,
+		           #bornDayTime#,#bornMonth#,#bornYear#, #lastDegree#)
+			</insert>
+
+	        <select id="validatePhone" resultClass="int" parameterClass="map">
+                select count(1) from T_OMS_EMPLOYEE_DETAILS d
+                left join T_OMS_EMPLOYEE_BASEINFOR e on d.userCode = e.userCode
+                where mobilePhone= #phone# and e.company= #company#
+	        </select>
+               
+            <select id="findNongliBirthEmployee" resultClass="employeeDetails">
+               SELECT  d.userCode,d.birthday,d.bornDayTime,d.bornMonth,d.bornYear
+			 FROM dbo.T_OMS_EMPLOYEE_DETAILS d where d.lunarCalendar=0
+            </select>
+            
+             <update id="updateNongliBirthdayToGongli">
+              update dbo.T_OMS_EMPLOYEE_DETAILS 
+              set birthday=#birthday# where lunarCalendar=0 and userCode=#userCode#
+             </update>
+               
+	        <!-- 查看员工档案详情 -->
+	        <select id="findForDetail" resultClass="employeeDetails">
+	        SELECT  eb.userCode,eb.userNameCn,eb.credentialsNo,eb.userNameEn,eb.sex,o.orgName,p.positionName,
+				 d.userHight,d.bloodType,d.accountLocation,d.alternatePhone,d.bornDay,d.constellation,d.lunarCalendar,
+					d.maritalStatus,d.mobilePhone,d.usedMailBox,d.accountLocation,d.familyAddress,d.familyTel,
+					d.homeTown,d.currAddress,d.politicalBackGround,d.lastDegree,d.lastStudyType,d.workTime,d.emergencyContacts,
+				 d.emergencyContactsPhone,d.status,d.birthday,isNull(d.showPhone,0) as showPhone,d.nation,d.hasChildren,d.health,d.officePhone
+				  ,d.enlist,d.census,d.rollbackReason
+			 FROM dbo.T_OMS_EMPLOYEE_DETAILS d
+			INNER JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR eb	 ON d.userCode=eb.userCode
+			INNER JOIN dbo.T_OMS_ORGANIZATION o ON o.id=eb.orgId
+			INNER JOIN dbo.T_OMS_POSITION p ON eb.positionId=p.id
+				WHERE d.userCode=#userCode#
+	        </select>
+	        <!-- 用于编辑 -->
+	        <select id="findForEdit" resultClass="employeeDetails">
+	        SELECT  eb.userCode,eb.userNameCn,eb.credentialsNo,eb.userNameEn,eb.sex,o.orgName,p.positionName,
+				 d.userHight,d.bloodType,d.familyAddressCity,d.familyAddressProvince,d.familyAddressDetail,
+				 d.alternatePhone,d.bornDay,d.constellation,d.maritalStatus,d.mobilePhone,d.usedMailBox,
+				 d.familyAddress,d.familyTel,d.homeTown,d.currAddress,d.politicalBackGround,d.lastDegree,d.lastStudyType,
+				 d.workTime,d.emergencyContacts,d.emergencyContactsPhone,d.status,d.birthday,isNull(d.showPhone,0) as showPhone,
+				 d.nation,d.hasChildren,d.health,d.officePhone,d.lunarCalendar,d.bornDayTime,d.bornMonth,d.bornYear
+				 ,enlist,census
+			 FROM dbo.T_OMS_EMPLOYEE_DETAILS d
+			INNER JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR eb
+			 ON d.userCode=eb.userCode
+			INNER JOIN dbo.T_OMS_ORGANIZATION o ON o.id=eb.orgId
+			INNER JOIN dbo.T_OMS_POSITION p ON eb.positionId=p.id
+				WHERE d.userCode=#userCode#
+	        </select>
+	        <update id="update">
+	        UPDATE dbo.T_OMS_EMPLOYEE_DETAILS
+			 SET status=0,accountLocation=#accountLocation:VARCHAR#,alternatePhone=#alternatePhone:VARCHAR#,officePhone=#officePhone:VARCHAR#,
+			  userHight=#userHight#,bloodType=#bloodType#,birthday=#birthday#,lunarCalendar=#lunarCalendar#,
+			  constellation=#constellation#,health=#health#,maritalStatus=#maritalStatus#,
+			  mobilePhone=#mobilePhone#,usedMailBox=#usedMailBox#,
+			  familyAddress=#familyAddress:VARCHAR#,familyTel=#familyTel:VARCHAR#,homeTown=#homeTown:VARCHAR#,
+			  nation=#nation#,currAddress=#currAddress:VARCHAR#,politicalBackGround=#politicalBackGround#,
+			  lastDegree=#lastDegree#
+			  ,lastStudyType = #lastStudyType#
+			  ,workTime=#workTime#,emergencyContacts=#emergencyContacts#,
+			  emergencyContactsPhone=#emergencyContactsPhone#,updator=#updator#,
+			  showPhone=#showPhone#,familyAddressProvince=#familyAddressProvince#,
+			  familyAddressCity=#familyAddressCity#,familyAddressDetail=#familyAddressDetail#,hasChildren=#hasChildren#
+			  ,enlist=#enlist#,census=#census#,bornDayTime=#bornDayTime#,bornMonth=#bornMonth#,bornYear=#bornYear#
+			  WHERE userCode=#userCode#
+	        </update>
+	        <!-- 撤销确认 -->
+	       <update id="updateUnchecked">
+	       	 UPDATE dbo.T_OMS_EMPLOYEE_DETAILS SET  status=0,updateTime=GETDATE(),updator=#updator#
+	       	 WHERE userCode=#userCode#
+	       </update>
+
+	       <!-- 打回修改 -->
+	       <update id="rollbackArchives">
+	        UPDATE dbo.T_OMS_EMPLOYEE_DETAILS
+	        SET  status=-1
+	        ,rollbackReason = #rollbackReason#
+	        ,updateTime=GETDATE(),updator=#updator#
+	       	 WHERE userCode=#userCode#
+	       </update>
+
+	       <!-- 确认 -->
+	        <update id="updateChecked">
+	       	 UPDATE dbo.T_OMS_EMPLOYEE_DETAILS
+	       	 SET  status=6000
+	       	 ,rollbackReason = null
+	       	 ,updateTime=GETDATE()
+	       	 ,updator=#updator#
+	       	 WHERE userCode=#userCode#
+	       </update>
+
+    <update id="updateMobilePhone">
+         UPDATE dbo.T_OMS_EMPLOYEE_DETAILS SET  mobilePhone=#mobilePhone#
+         WHERE userCode=#userCode#
+    </update>
+
+    <select id="queryByWebFlag" resultClass="employeeDetails">
+        SELECT d.userCode, d.mobilePhone
+        FROM dbo.T_OMS_EMPLOYEE_STATUS_RECORD r
+        inner JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR b
+            ON b.userCode = r.userCode
+            AND b.company = '德佑'
+            AND DATEADD(HOUR, 2, b.createTime) <![CDATA[ <= ]]> GETDATE()
+        inner JOIN dbo.T_OMS_EMPLOYEE_DETAILS d ON d.userCode = r.userCode
+        WHERE r.webFlag = #webFlag#
+    </select>
+
+    <select id="countUnCheckNum" resultClass="integer">
+        SELECT COUNT(1) FROM dbo.T_OMS_EMPLOYEE_DETAILS d
+        inner JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR b ON b.userCode = d.userCode
+        WHERE d.status = 0 AND b.status IN ('正式','试用期') AND b.company = #company#
+    </select>
+
+</sqlMap>

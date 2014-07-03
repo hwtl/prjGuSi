@@ -1,0 +1,10 @@
+.fatSearch {width:auto}
+.fatSearch li.title{width:90px; float:left; padding:8px 0 0 8px; text-align:right;}
+.fatSearch li.content{float:left; padding:8px 30px 0 0;}
+
+.mt_4 {margin-top:4px;}
+
+.history td{color:#999;}
+a.attachMini {
+	width:14px; height:14px; background:url(../images/bg_attach_blue.gif) no-repeat left top;
+}

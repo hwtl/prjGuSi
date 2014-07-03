@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Organization">
+
+	<!-- 添加组织部门并返回id -->
+	<insert id="insertAndReturnId" parameterClass="organization">
+		INSERT INTO [dbo].[T_OMS_ORGANIZATION]
+		([parentId]
+		,[orgName]
+		,[orgLevel]
+		,[orgType]
+		,[orgCode]
+		,[orgLongCode]
+		,[status]
+		,[creator]
+		,[openDate]
+		,[closedDate]
+		,[manager]
+		,[orgClass]
+		,[address]
+		,[eAddress]
+		,[eOrgName]
+		,[locIndex]
+		,[remark]
+        ,[orgPhone]
+        ,[orgFax]
+        ,[company]
+		)
+		VALUES
+		(
+		#parentId#,
+		#orgName:LONGVARCHAR#,
+		#orgLevel:INTEGER#,
+		#orgType:LONGVARCHAR#,
+		#orgCode:INTEGER#,
+		#orgLongCode:INTEGER#,
+		#status:INTEGER#,
+		#creator:LONGVARCHAR#,
+		#openDate:TIMESTAMP#,
+		#closedDate:TIMESTAMP#,
+		#manager:LONGVARCHAR#,
+		#orgClass:LONGVARCHAR#,
+		#address:LONGVARCHAR#,
+		#eAddress:LONGVARCHAR#,
+		#eOrgName:LONGVARCHAR#,
+		#locIndex#,
+		#remark#,
+        #orgPhone#,
+        #orgFax#,
+        #company#
+		)
+		<selectKey resultClass="integer" keyProperty="id">
+			SELECT
+			@@IDENTITY AS id
+		</selectKey>
+	</insert>
+     <!--空组 -->
+    <select id="ifEmptyOrgExists" resultClass="int">
+        select count(1) from dbo.T_OMS_ORGANIZATION org
+			 INNER JOIN dbo.T_OMS_ORGANIZATION po ON org.parentId=po.id AND po.id =#parentId#
+			WHERE EXISTS
+			(
+			  SELECT 1 FROM dbo.T_OMS_ORGANIZATION co WHERE co.parentId=po.id
+			   AND co.status IN ('-1') 
+			    AND co.orgName=#orgName#
+			   <!-- 
+			    AND co.orgName LIKE '%空组_'   
+			   -->
+			)  
+    </select>
+
+	<select id="findViewById" resultClass="vOrganization" parameterClass="integer">
+		SELECT *
+		FROM [v2_organization_list]
+		WHERE id = #id#
+	</select>
+
+	<select id="findBZForDetail" resultClass="vOrganization">
+		SELECT
+        rs.id
+        ,n.allFormalNo,n.allRegisterNo
+        ,(SELECT ISNULL(COUNT(1),0) FROM dbo.T_OMS_ORGANIZATION o WITH(NOLOCK)
+            WHERE o.orgLongCode LIKE (SELECT orgLongCode FROM dbo.T_OMS_ORGANIZATION WITH(NOLOCK) WHERE id = #id#) + '%'
+            AND o.status = 1 AND o.orgType = '分行') AS branchNo
+        ,(SELECT ISNULL(COUNT(1),0) FROM dbo.T_OMS_EMPLOYEE_BASEINFOR WITH(NOLOCK)
+             WHERE orgId = #id# AND positionId = 6) AS qzNo
+        ,(SELECT ISNULL(SUM(oec.maxCount),0) FROM dbo.T_OMS_ORGNIZATION_EMPLOYEE_COUNT oec WITH(NOLOCK)
+            WHERE orgId = #id# AND status = 1 AND limitType = 1) AS fdNo
+        ,(SELECT ISNULL(SUM(oec.maxCount),0) FROM dbo.T_OMS_ORGNIZATION_EMPLOYEE_COUNT oec WITH(NOLOCK)
+             WHERE orgId = #id# AND status = 1 AND limitType = 2) AS gzfdNo
+        ,CASE
+            WHEN (rs.orgLongCode LIKE (SELECT orgLongCode FROM dbo.T_OMS_ORGANIZATION WITH(NOLOCK) WHERE id = 22) + '%') THEN 10
+            WHEN (rs.orgLongCode LIKE (SELECT orgLongCode FROM dbo.T_OMS_ORGANIZATION WITH(NOLOCK) WHERE id = 21278) + '%') THEN 11
+            ELSE 0
+        END AS branchRequireEmpNo
+        FROM dbo.v2_organization_list rs WITH(NOLOCK)
+        LEFT JOIN
+            (SELECT ISNULL(SUM(s.employeeNo),0) AS allFormalNo,ISNULL(SUM(s.registerNo),0) as allRegisterNo
+            ,l.id FROM v2_organization_list l WITH(NOLOCK)
+            LEFT JOIN dbo.v2_organization_list s WITH(NOLOCK) ON s.orgLongCode LIKE l.orgLongCode + '%'
+            GROUP BY l.id) n ON n.id = rs.id
+        where rs.id = #id#
+	</select>
+
+	<select id="findViewForTransfer" resultClass="vOrganization">
+	  SELECT id,parentId,status,orgName,orgType,openDate,manager,managerName,orgCode,orgLevel
+		FROM [v2_organization_list]
+		WHERE id = #id#
+	</select>
+	<!-- 查看子组织 -->
+	<select id="findSubOrgsWithView" resultClass="vOrganization">
+	   SELECT id,parentId,orgName,orgType,openDate,manager,managerName,orgCode,orgLevel
+		FROM [v2_organization_list] vl
+		WHERE vl.parentId = #id# AND vl.status=1 AND
+		 vl.manager IS NOT NULL AND vl.manager !=0
+		 AND NOT EXISTS (
+		  SELECT 1 FROM dbo.T_OMS_ORGANIZATION_TRANSFER tr
+		   WHERE tr.status=0 AND (tr.orgAId=vl.id OR tr.orgBId=vl.id)
+		 )
+	</select>
+
+    <select id="findById" resultClass="organization">
+		SELECT *
+		FROM [dbo].[T_OMS_ORGANIZATION]
+		WHERE id = #id#
+	</select>
+
+	<!-- 根据组织查找该组织负责人 -->
+	<select id="findManagerByBean" resultClass="organization"
+		parameterClass="integer">
+		SELECT
+		[manager]
+		FROM [dbo].[T_OMS_ORGANIZATION]
+		WHERE id
+		= #id#
+	</select>
+
+    <!--更新组织-->
+	<update id="update" parameterClass="organization">
+		UPDATE [dbo].[T_OMS_ORGANIZATION]
+		SET [updateTime] = getdate()
+		    ,[parentId] = #parentId#
+            ,[openDate] = #openDate#
+		<dynamic>
+			<isNotNull prepend="," property="orgName">
+				[orgName] = #orgName#
+			</isNotNull>
+            <isNotNull prepend="," property="orgLongCode">
+				[orgLongCode] = #orgLongCode#
+			</isNotNull>
+			<isNotNull prepend="," property="orgLevel">
+				[orgLevel] = #orgLevel#
+			</isNotNull>
+			<isNotNull prepend="," property="orgType">
+				[orgType] = #orgType#
+			</isNotNull>
+			<isNotNull prepend="," property="address">
+				[address] = #address#
+			</isNotNull>
+			<isNotNull prepend="," property="orgPhone">
+				[orgPhone] = #orgPhone#
+			</isNotNull>
+			<isNotNull prepend="," property="orgFax">
+				[orgFax] = #orgFax#
+			</isNotNull>
+			<isNotNull prepend="," property="updator">
+				[updator] = #updator#
+			</isNotNull>
+			<isNotNull prepend="," property="closedDate">
+				[closedDate] = #closedDate#
+			</isNotNull>
+			<isNotNull prepend="," property="eOrgName">
+				[eOrgName] = #eOrgName#
+			</isNotNull>
+				,[manager] = #manager#
+			<isNotNull prepend="," property="orgClass">
+				[orgClass] = #orgClass#
+			</isNotNull>
+			<isNotNull prepend="," property="eAddress">
+				[eAddress] = #eAddress#
+			</isNotNull>
+			<isNotNull prepend="," property="company">
+				[company] = #company#
+			</isNotNull>
+			<isNotNull prepend="," property="remark">
+				[remark] = #remark#
+			</isNotNull>
+		</dynamic>
+		WHERE id = #id#
+	</update>
+     
+     <update id="stopFenHang">
+     UPDATE
+		[dbo].[T_OMS_ORGANIZATION]
+		set [updateTime] = getdate()
+		<dynamic>
+			<isNotNull prepend="," property="updator">
+				[updator] = #updator#
+			</isNotNull>
+			<isNotEmpty prepend="," property="orgName">
+			 [orgName]=#orgName#
+			</isNotEmpty>
+			<isNotNull prepend="," property="status">
+				[status] = #status#
+			</isNotNull>
+            <isNotEmpty prepend="," property="closedDate">
+                [closedDate] = #closedDate#
+            </isNotEmpty>
+		</dynamic>
+		where id = #id#
+     </update>
+  
+    <!--查找是否拥有组织负责热-->
+	<select id="countByManager" parameterClass="integer"
+		resultClass="integer">
+		select count(1) from T_OMS_ORGANIZATION
+		where id = #orgId#
+		and manager is not null
+	</select>
+
+    <!--根据Id更新组织负责人-->
+	<update id="updateManager" parameterClass="organization">
+		UPDATE [dbo].[T_OMS_ORGANIZATION]
+		SET [updateTime] = getdate()
+		<dynamic>
+			<isNull prepend="," property="manager">
+				[manager] = null
+			</isNull>
+			<isNotNull prepend="," property="manager">
+				[manager] = #manager#
+			</isNotNull>
+		</dynamic>
+		WHERE id = #id#
+	</update>
+
+    <!--根据id删除组织-->
+	<delete id="delete" parameterClass="integer">
+		DELETE FROM
+		[dbo].[T_OMS_ORGANIZATION]
+		WHERE id = #id#
+	</delete>
+
+    <!--根据上级组织id和组织级别查找组织-->
+	<select id="countSon" parameterClass="organization" resultClass="integer">
+		select count(id) from T_OMS_ORGANIZATION where parentId = #id# and
+		orgLevel = #orgLevel# + 1
+	</select>
+
+    <!--根据id更新组织的code-->
+	<update id="updateCode" parameterClass="organization">
+		UPDATE
+		[dbo].[T_OMS_ORGANIZATION]
+		set [updateTime] = getdate()
+		<dynamic>
+			<isNotNull prepend="," property="updator">
+				[updator] = #updator#
+			</isNotNull>
+		</dynamic>
+		,[orgCode] = #orgCode#
+		,[orgLongCode] = #orgLongCode#
+		where id = #id#
+	</update>
+
+    <!--更新组织传真和地址-->
+	<update id="updateContactInfo" parameterClass="organization">
+		UPDATE
+		[dbo].[T_OMS_ORGANIZATION]
+		set [updateTime] = getdate()
+            ,[orgFax] = #orgFax#
+            ,[orgPhone] = #orgPhone#
+            ,[updator] = #updator#
+		where id = #id#
+	</update>
+
+    <!--更新组织排序-->
+	<update id="updateLocIndex" parameterClass="organization">
+		UPDATE
+		[dbo].[T_OMS_ORGANIZATION]
+		set [updateTime] = getdate()
+		<dynamic>
+			<isNotNull prepend="," property="updator">
+				[updator] = #updator#
+			</isNotNull>
+		</dynamic>
+		,[locIndex] = #locIndex#
+		where id = #id#
+	</update>
+
+    <!--更新组织传真和电话-->
+    <update id="updateOrgFax" parameterClass="organization">
+        UPDATE
+        [dbo].[T_OMS_ORGANIZATION]
+        set [updateTime] = getdate()
+        <dynamic>
+            <isNotNull prepend="," property="updator">
+                [updator] = #updator#
+            </isNotNull>
+        </dynamic>
+        ,[orgFax] = #orgFax#
+        ,[orgPhone] = #orgPhone#
+        where id = #id#
+    </update>
+    
+    <update id="updateTempOrgsToNormal">
+    UPDATE o SET status=1,updateTime=GETDATE() from [dbo].[T_OMS_ORGANIZATION] o
+      where o.status=2 AND  GETDATE() > o.openDate
+    </update>
+    
+    <update id="updateStatusForEdit">
+	    UPDATE
+			[dbo].[T_OMS_ORGANIZATION]
+			set [updateTime] = getdate()
+			<dynamic>
+				<isNotNull prepend="," property="updator">
+					[updator] = #updator#
+				</isNotNull>
+				<isNotEqual prepend="," property="status" compareValue="-9">
+					[status] = #status#
+				</isNotEqual>
+			</dynamic>
+			where id = #id#
+    </update>
+    
+	<!-- 更新组织状态 -->
+	<update id="updateStatus" parameterClass="organization">
+		UPDATE
+		[dbo].[T_OMS_ORGANIZATION]
+		set [updateTime] = getdate()
+		<dynamic>
+			<isNotNull prepend="," property="updator">
+				[updator] = #updator#
+			</isNotNull>
+			<isNotNull prepend="," property="status">
+				[status] = #status#
+			</isNotNull>
+            <isNotNull prepend="," property="openDate">
+                [openDate] = #openDate#
+            </isNotNull>
+            <isNotEmpty prepend="," property="closedDate">
+                [closedDate] = #closedDate#
+            </isNotEmpty>
+            <isEmpty prepend="," property="closedDate">
+                [closedDate] = null
+            </isEmpty>
+		</dynamic>
+		where id = #id#
+	</update>
+
+    <select id="queryListByOrgIds" parameterClass="map" resultClass="organization">
+        select * from [dbo].[T_OMS_ORGANIZATION]
+        WHERE
+        <isNotNull property="orgIds">
+            <![CDATA[ id in ]]>
+            <iterate property="orgIds" conjunction="," open="(" close=")">
+                #orgIds[]#
+            </iterate>
+        </isNotNull>
+    </select>
+
+    <select id="isExistName" parameterClass="string" resultClass="integer">
+        select count(1) from T_OMS_ORGANIZATION where orgName = #orgName#
+    </select>
+
+	<!-- 根据组织名称查找组织 -->
+	<select id="findByName" parameterClass="map" resultClass="organization">
+		SELECT top 1
+		 [id]
+		,[parentId]
+		,[orgName]
+		,[orgLevel]
+		,[orgType]
+		,[orgCode]
+		,[orgLongCode]
+		,[status]
+		,[eOrgName]
+		,[manager]
+		,[orgClass]
+		,[eAddress]
+		,[company]
+		,[openDate]
+		,[closedDate]
+		FROM [dbo].[T_OMS_ORGANIZATION]
+		WHERE orgName = #orgName#
+		      and company = #company#
+	</select>
+
+	<!-- 分页 -->
+	<select id="queryForPaginate2" parameterClass="organization" resultClass="vOrganization">
+        mst_sp_pageshowex4 #columns# ,#table#,#where#,#orderBy#,#pageSize#,#pageNo#
+    </select>
+    <select id="count2" parameterClass="organization" resultClass="integer">
+        sp_pagecount #table#,#where#
+    </select>
+
+	<select id="querySonOrgs" parameterClass="map" resultClass="organization">
+		select * from T_OMS_ORGANIZATION
+		WHERE parentId = #orgId#
+        <isNotNull property="status">
+            <![CDATA[ and status in ]]>
+            <iterate property="status" conjunction="," open="(" close=")">
+                #status[]#
+            </iterate>
+        </isNotNull>
+	</select>
+
+	<select id="isHasupdateCount" parameterClass="integer" resultClass="integer">
+		SELECT COUNT(1) FROM T_OMS_ORGANIZATION WHERE
+		DATEDIFF(MINUTE,updateTime,GETDATE())
+		 <![CDATA[  <=  ]]>
+		 10 * #counter#
+	</select>
+
+	<select id="queryOrgTree" resultClass="organization" parameterClass="string">
+		select
+		id, parentId, orgCode ,orgLongCode, orgName ,orgLevel, status, locIndex, orgType ,orgClass
+		from T_OMS_ORGANIZATION
+		where company= #company#
+		order by parentId, locIndex asc
+	</select>
+
+	<select id="getRoot" resultClass="organization" parameterClass="string">
+		select top 1
+    	id, parentId, orgCode ,orgLongCode, orgName ,orgLevel, status, locIndex, orgType ,orgClass
+		from T_OMS_ORGANIZATION
+	    where parentId = 0 and company=#company#
+	    order by parentId, locIndex asc
+	</select>
+
+    <select id="getSales" resultClass="organization" parameterClass="string">
+        select * from T_OMS_ORGANIZATION where orgClass='前台' and company = #company#
+        order by parentId, locIndex asc
+    </select>
+
+    <select id="getSalesWithoutStore" resultClass="organization" parameterClass="string">
+        select * from T_OMS_ORGANIZATION where orgClass='前台' and company = #company# and orgType != '门店'
+        order by parentId, locIndex asc
+    </select>
+
+    <select id="getSalesWithoutBranch" resultClass="organization" parameterClass="string">
+        select * from T_OMS_ORGANIZATION where orgClass='前台' and company = #company# and orgType != '分行'
+        order by parentId, locIndex asc
+    </select>
+
+    <select id="getSupport" resultClass="organization" parameterClass="string">
+        select * from T_OMS_ORGANIZATION where orgClass='后台' and company = #company#
+        order by parentId, locIndex asc
+    </select>
+
+    <select id="getSalesRoot" resultClass="organization" parameterClass="integer">
+        select  id, parentId, orgCode, orgLongCode, orgName, orgLevel, status, locIndex, orgType
+        from T_OMS_ORGANIZATION
+        where id = #id#
+    </select>
+    <update id="updateOrgLongCode" parameterClass="map">
+    update T_OMS_ORGANIZATION
+	set orgLongCode = replace(orgLongCode,#oldCode#,#newCode#),updateTime = getDate()
+	where orgLongCode like #oldCode# + '%'
+  </update>
+
+    <update id="updateOrgLevel" parameterClass="map">
+    update T_OMS_ORGANIZATION set orgLevel = orgLevel + #dis#,updateTime = getDate() where orgLongCode like #newCode# + '%'
+  </update>
+
+
+    <select id="findorgLongNameById" resultClass="String">
+        SELECT LEFT(t.longName, LEN(t.longName) -1) AS longName FROM (
+        SELECT (
+        SELECT TOP 4 po.orgName + '/' FROM dbo.T_OMS_ORGANIZATION o
+        LEFT JOIN dbo.T_OMS_ORGANIZATION po ON o.orgLongCode LIKE po.orgLongCode + '%'
+        WHERE
+        o.id = #orgId# AND po.orgLevel != 0
+        ORDER BY po.orgLevel DESC FOR XML PATH('')) AS longName
+        ) t
+    </select>
+
+    <select id="findAreaOrg" resultClass="vOrganization">
+        $sql$
+    </select>
+
+    <select id="findEmployeeCount" resultClass="Integer">
+        SELECT COUNT(1) AS num FROM dbo.T_OMS_EMPLOYEE_BASEINFOR b WITH(NOLOCK)
+        LEFT JOIN dbo.T_OMS_ORGANIZATION o WITH(NOLOCK) ON o.id = b.orgId
+        WHERE b.status IN ('正式', '试用期', '总部待报到', '门店待报到')
+        and b.positionId != 6
+        AND o.orgLongCode LIKE #orgLongCode# + '%'
+    </select>
+
+    <select id="findBranchCount" resultClass="Integer">
+        SELECT COUNT(1) AS num FROM dbo.T_OMS_ORGANIZATION o WITH(NOLOCK)
+        WHERE o.status =1 AND o.orgType = '分行'
+        AND o.orgLongCode LIKE #orgLongCode# + '%'
+    </select>
+
+</sqlMap>

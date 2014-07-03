@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="OrganizationHeaderHistory">
+	<insert id="insert" parameterClass="organizationHeaderHistory">
+		INSERT INTO
+		[dbo].[T_OMS_ORGANIZATION_HEADER_HISTORY]
+		([orgId]
+		,[positionId]
+		,[userCode]
+		,[userNameCn]
+		,[status]
+		,[startTime]
+		)
+		VALUES
+		(#orgId#
+		,#positionId#
+		,#userCode#
+		,#userNameCn#
+		,#status#
+		,getdate()
+		)
+	</insert>
+
+	 <!-- 根据工号将此负责人所有记录更改为离任 -->
+     <update id="relieveByUserCode">
+		UPDATE
+		[dbo].[T_OMS_ORGANIZATION_HEADER_HISTORY]
+		SET
+		[status] = #status#
+		,[endTime] = getdate()
+		WHERE status='正常' and 	userCode=#userCode#
+	</update>
+	
+	<update id="relieve" parameterClass="organizationHeaderHistory">
+		UPDATE
+		[dbo].[T_OMS_ORGANIZATION_HEADER_HISTORY]
+		SET
+		[status] = #status#
+		,[endTime] = getdate()
+		WHERE status='正常' and orgId=#orgId# and
+		positionId=#positionId# and
+		userCode=#userCode#
+	</update>
+
+	<select id="queryForListByOrgId" parameterClass="integer"
+		resultClass="organizationHeaderHistory">
+		SELECT
+		[userCode]
+		,[userNameCn]
+		,[status]
+		,[startTime]
+		,[endTime]
+		FROM
+		[dbo].[T_OMS_ORGANIZATION_HEADER_HISTORY]
+		WHERE
+		orgId=#orgId#
+	</select>
+
+    <select id="findNormalByOrgId" resultClass="organizationHeaderHistory" parameterClass="integer">
+        select * from T_OMS_ORGANIZATION_HEADER_HISTORY where orgId = #orgId# and status = '正常'
+    </select>
+
+</sqlMap>

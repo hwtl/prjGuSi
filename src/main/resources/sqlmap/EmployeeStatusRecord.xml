@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeStatusRecord">
+
+    <insert id="insert" parameterClass="employeeStatusRecord">
+        INSERT INTO [oms].[dbo].[T_OMS_EMPLOYEE_STATUS_RECORD]
+        ([userCode]
+        ,[status])
+        VALUES
+        (#userCode#
+        ,#status#
+        )
+    </insert>
+
+    <select id="findById" parameterClass="integer" resultClass="employeeStatusRecord">
+        SELECT [userCode]
+              ,[status]
+          FROM [dbo].[T_OMS_EMPLOYEE_STATUS_RECORD]
+        WHERE  userCode=#userCode#
+    </select>
+
+   <update id="updateByUserCodesToOver">
+         UPDATE dbo.T_OMS_EMPLOYEE_STATUS_RECORD
+          SET webFlag = 2
+          where
+       <isNotNull property="employeeDetailsList">
+           <![CDATA[ userCode IN ]]>
+           <iterate property="employeeDetailsList" conjunction="," open="(" close=")">
+               #employeeDetailsList[].userCode#
+           </iterate>
+       </isNotNull>
+
+   </update>
+
+
+</sqlMap>

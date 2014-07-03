@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeFamily">
+  <insert id="insert">
+     insert into T_OMS_EMPLOYEE_FAMILY (userCode, alias, name, 
+      bornDate, job, workplace, phone, creator,  createTime)
+      values (#userCode#, #alias:VARCHAR#, #name:VARCHAR#, 
+      #bornDate#, #job:VARCHAR#, #workplace:VARCHAR#, #phone:VARCHAR#, #creator:INTEGER#,getDate())
+  </insert>
+  
+  <delete id="deleteFamilyByUserCode">
+  	delete from T_OMS_EMPLOYEE_FAMILY
+  	where userCode = #userCode#
+  </delete>
+  <select id="findFamiliesByUserCode" resultClass="employeeFamily">
+  	SELECT userCode, alias, name, bornDate, job, workplace, phone
+  	 from T_OMS_EMPLOYEE_FAMILY
+  	 where userCode = #userCode#
+  </select>
+</sqlMap>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+
+				  http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+
+    <mvc:resources mapping="/static/**" location="/"/>
+
+    <mvc:annotation-driven/>
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+        <property name="order" value="1000" />
+    </bean>
+
+    <bean id="dyMessageConverter" class="com.dooioo.web.converter.DyMappingJacksonHttpMessageConverter"/>
+
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+        <!-- spring绑定时处理函数 -->
+        <property name="webBindingInitializer">
+            <bean class="com.gusi.init.DefaultBindingInitializer"/>
+        </property>
+        <property name="messageConverters">
+            <list>
+                <ref bean="dyMessageConverter"/>
+            </list>
+        </property>
+        <property name="requireSession" value="false"/>
+        <property name="order" value="0"/>
+    </bean>
+
+    <bean id="exceptionResolver" class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver">
+        <property name="messageConverters">
+            <ref bean="dyMessageConverter"/>
+        </property>
+    </bean>
+
+    <bean id="compositeExceptionResolver"  class="org.springframework.web.servlet.handler.HandlerExceptionResolverComposite">
+        <property name="exceptionResolvers">
+            <list>
+                <bean class="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver">
+                    <property name="messageConverters">
+                        <ref bean="dyMessageConverter"/>
+                    </property>
+                </bean>
+                <bean class="org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver"/>
+                <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+                    <property name="exceptionMappings">
+                        <props>
+                            <prop key="java.lang.ClassNotFoundException">pages/classNotFoundException</prop>
+                            <prop key="java.lang.CloneNotSupportedException">pages/cloneNotSupportedException</prop>
+                        </props>
+                    </property>
+                </bean>
+            </list>
+        </property>
+        <property name="order" value="0"/>
+    </bean>
+</beans>

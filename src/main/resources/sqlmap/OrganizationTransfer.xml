@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="OrganizationTransfer">
+
+    <insert id="insertAndReturnId" parameterClass="organizationTransfer">
+        INSERT INTO [dbo].[T_OMS_ORGANIZATION_TRANSFER]
+        ([transferMode]
+        ,[orgAId]
+        ,[orgAParentId]
+        ,[orgAName]
+        ,[orgBId]
+        ,[orgBParentId]
+        ,[orgBName]
+        ,[activeDate]
+        ,[status]
+        ,[createTime]
+        ,[creator]
+        )
+        VALUES
+        (#transferMode#
+        ,#orgAId#
+        ,#orgAParentId#
+        ,#orgAName#
+        ,#orgBId#
+        ,#orgBParentId#
+        ,#orgBName#
+        ,#activeDate#
+        ,#status#
+        ,getdate()
+        ,#creator#
+        )
+        <selectKey resultClass="integer" keyProperty="id">
+            select @@IDENTITY AS id
+        </selectKey>
+    </insert>
+
+    <update id="updateStatus">
+        update T_OMS_ORGANIZATION_TRANSFER
+        set status = #newStatus#
+            ,updateTime = getdate()
+            ,updator = #updator#
+        where id = #id# And status =#oldStatus#
+    </update>
+    
+
+    <select id="findById" parameterClass="integer" resultClass="organizationTransfer">
+                SELECT [id]
+              ,[transferMode]
+              ,[orgAId]
+              ,[orgAParentId]
+              ,[orgAName]
+              ,[orgBId]
+              ,[orgBParentId]
+              ,[orgBName]
+              ,[activeDate]
+              ,[status]
+              ,[createTime]
+              ,[creator]
+              ,[updateTime]
+              ,[updator]
+          FROM [T_OMS_ORGANIZATION_TRANSFER]
+          where id = #id#
+    </select>
+
+    <select id="checkTransfer" parameterClass="integer" resultClass="integer">
+        select COUNT(*) from T_OMS_ORGANIZATION_TRANSFER
+      where status = 0 and ( orgAId = #orgId# OR orgBId = #orgId# )
+    </select>
+    
+    <select id="checkStoreHasInArea" resultClass="integer">
+      SELECT COUNT(*)FROM dbo.T_OMS_ORGANIZATION o WHERE o.id IN ($orgIds$)
+		 AND EXISTS
+		 (
+		  SELECT 1 FROM dbo.T_OMS_ORGANIZATION area WHERE area.id IN ($areaId$) AND area.orgType='区域'
+		   AND o.orgLongCode LIKE area.orgLongCode+'%'
+		 )
+    </select>
+    
+    <select id="checkStoreTransfer" resultClass="integer">
+     select COUNT(*) from T_OMS_ORGANIZATION_TRANSFER
+      where status = 0 and 
+      (  
+         orgAId IN ($storeIds$) OR orgBId IN($storeIds$)
+      )
+    </select>
+
+    <select id="queryActiveToday" resultClass="organizationTransfer">
+         select * from [T_OMS_ORGANIZATION_TRANSFER]
+          where activeDate
+        <![CDATA[ <= ]]>
+          getDate()  and status = 0
+          order by transferMode desc
+          
+    </select>
+
+    <select id="findOrgTransfers" resultClass="vorganizationTransfer">
+   	  mst_sp_pageshowex4 #columns#,#table#,#where#,#orderBy#,#pageSize#,#pageNo#
+    </select>
+    <select id="count2" parameterClass="vorganizationTransfer" resultClass="integer">
+        sp_pagecount #table#,#where#
+    </select>
+
+</sqlMap>

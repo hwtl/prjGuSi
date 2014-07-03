@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="RolePosition">
+     <!--添加岗位与权限 的关系 -->
+    <insert id="insert">
+     INSERT INTO [T_OMS_POSITION_ROLE]
+           ([positionId]
+           ,[roleId])
+     VALUES
+           (#positionId#
+           ,#roleId#)
+	</insert>
+	
+	<delete id="delete" parameterClass="hashMap">
+		delete from t_oms_position_role where positionId = #positionId# and exists (
+			select 1 from t_oms_role as r where appId = #appId# and r.id = roleId
+		)
+	</delete>
+</sqlMap>

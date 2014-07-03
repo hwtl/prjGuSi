@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeTransferTaskStatus">
+
+    <typeAlias alias="employeeTransferTaskStatus" type="com.gusi.empTransfer.model.EmployeeTransferTaskStatus"/>
+
+    <insert id="insert">
+        INSERT INTO [T_OMS_EMPLOYEE_TRANSFER_TASK_STATUS]
+        ([id]
+        ,[processInsId]
+        ,[taskId]
+        ,[taskName]
+        ,[operateUrl]
+        ,[handlerName]
+        )
+        VALUES
+        (
+         #id#
+        ,#processInsId#
+        ,#taskId#
+        ,#taskName#
+        ,#operateUrl#
+        ,#handlerName#
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE [T_OMS_EMPLOYEE_TRANSFER_TASK_STATUS]
+        SET
+        [processInsId] = #processInsId#
+        ,[taskId] = #taskId#
+        ,[taskName] = #taskName#
+        ,[operateUrl] = #operateUrl#
+        ,[handlerName] = #handlerName#
+        ,[updateTime] = getdate()
+        WHERE id = #id#
+    </update>
+
+    <select id="findById" resultClass="employeeTransferTaskStatus">
+        select * from T_OMS_EMPLOYEE_TRANSFER_TASK_STATUS where id = #id#
+    </select>
+
+    <select id="findProcessByMap" parameterClass="hashMap" resultClass="employeeTransferTaskStatus">
+		SELECT task.*
+		FROM   T_OMS_EMPLOYEE_TRANSFER base
+       		LEFT JOIN T_OMS_EMPLOYEE_TRANSFER_TASK_STATUS task
+            	ON base.id = task.id
+        WHERE 1 = 1
+       <dynamic>
+           <isNotEqual prepend="AND" compareValue="0" property="status">
+               status = #status#
+           </isNotEqual>
+       </dynamic>
+    </select>
+
+</sqlMap>

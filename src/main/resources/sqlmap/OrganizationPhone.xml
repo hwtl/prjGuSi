@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="OrganizationPhone">
+
+	<insert id="insert">
+		INSERT INTO [dbo].[T_OMS_ORGANIZATION_PHONE]
+		([orgId]
+		,[phone]
+		,[line])
+		VALUES
+		(#orgId#
+		,#phone#
+		,#line#)
+	</insert>
+
+	<delete id="deleteByOrgId" parameterClass="integer">
+		DELETE FROM
+		[dbo].[T_OMS_ORGANIZATION_PHONE]
+		WHERE orgId = #orgId#
+	</delete>
+
+	<delete id="delete" parameterClass="integer">
+		DELETE FROM
+		[dbo].[T_OMS_ORGANIZATION_PHONE]
+		WHERE id = #id#
+	</delete>
+
+	<update id="update" parameterClass="organizationPhone">
+		UPDATE
+		[dbo].[T_OMS_ORGANIZATION_PHONE]
+		SET [orgId] = #orgId#
+		,[phone] =
+		#phone#
+		,[line] = #line#
+		WHERE id = #id#
+	</update>
+
+	<select id="findById" parameterClass="integer" resultClass="organizationPhone">
+		SELECT
+		[orgId]
+		,[phone]
+		,[line]
+		FROM [dbo].[T_OMS_ORGANIZATION_PHONE]
+		where id = #id#
+	</select>
+
+	<select id="queryForListByOrgId" parameterClass="integer"
+		resultClass="organizationPhone">
+		SELECT [id]
+		,[orgId]
+		,[phone]
+		,[line]
+		FROM [dbo].[T_OMS_ORGANIZATION_PHONE]
+		WHERE orgId = #orgId#
+	</select>
+
+</sqlMap>

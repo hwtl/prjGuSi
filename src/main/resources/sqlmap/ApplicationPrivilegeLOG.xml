@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="ApplicationPrivilegeLOG">
+     <!--添加权限 具体权限 -->
+    <insert id="insert">
+        INSERT INTO [T_OMS_APPLICATION_PRIVILEGE_LOG]
+        (
+         [appId]
+        ,[privilegeId]
+        ,[privilegeName]
+        ,[privilegeUrl]
+        ,[creator]
+        ,[operateType]
+        )
+        select
+         appId
+        ,id
+        ,privilegeName
+        ,privilegeUrl
+        ,#creator#
+        ,#operateType#
+       from  T_OMS_APPLICATION_PRIVILEGE
+       where id = #privilegeId#
+    </insert>
+</sqlMap>

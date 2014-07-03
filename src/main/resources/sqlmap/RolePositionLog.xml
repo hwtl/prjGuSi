@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="RolePositionLog">
+     <!--添加部门与权限 的关系 -->
+    <insert id="insert">
+        INSERT INTO [T_OMS_POSITION_ROLE_LOG]
+        (
+         [positionId]
+        ,[roleIdStr]
+        ,[creator]
+        ,[operateType]
+        )
+        VALUES
+        (
+         #positionId#
+        ,#roleIdStr#
+        ,#creator#
+        ,#operateType#
+        )
+    </insert>
+
+
+    <select id="queryRoleIdByAppId" parameterClass="map" resultClass="String">
+        SELECT pr.roleId FROM t_oms_position_role pr
+        INNER JOIN T_OMS_ROLE r on pr.roleId = r.id
+        where appId = #appId# and positionId = #positionId#
+    </select>
+</sqlMap>

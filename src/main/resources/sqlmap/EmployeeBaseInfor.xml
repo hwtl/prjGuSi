@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+            PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+            "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="EmployeeBaseInfor">
+
+    <insert id="insertAndReturnId" parameterClass="employeeBaseInfor">
+        INSERT INTO [dbo].[T_OMS_EMPLOYEE_BASEINFOR]
+        (
+             [orgId]
+            ,[userNameCn]
+            ,[userNameEn]
+            ,[credentialsType]
+            ,[credentialsNo]
+            ,[experience]
+            ,[sex]
+            ,[status]
+            ,[joinDate]
+            ,[newJoinDate]
+            ,[formalDate]
+            ,[password]
+            ,[creator]
+            ,[userTitle]
+            ,[positionId]
+            ,[eUserTitle]
+            ,[levelId]
+            ,[company]
+            ,[updatetime]
+        )
+        VALUES
+        (
+             #orgId#
+            ,#userNameCn:LONGVARCHAR#
+            ,#userNameEn:LONGVARCHAR#
+            ,#credentialsType:LONGVARCHAR#
+            ,#credentialsNo:LONGVARCHAR#
+            ,#experience:VARCHAR#
+            ,#sex:LONGVARCHAR#
+            ,#status:LONGVARCHAR#
+            ,#joinDate:TIMESTAMP#
+            ,#joinDate:TIMESTAMP#
+            ,#formalDate:TIMESTAMP#
+            ,#password:LONGVARCHAR#
+            ,#creator#
+            ,#userTitle:LONGVARCHAR#
+            ,#positionId#
+            ,#eUserTitle:LONGVARCHAR#
+            ,#levelId#
+            ,#company:LONGVARCHAR#
+            ,getdate()
+        )
+        <selectKey resultClass="integer" keyProperty="userCode">
+            SELECT
+            @@IDENTITY AS userCode
+        </selectKey>
+    </insert>
+
+    <select id="findByBean" resultClass="employeeBaseInfor">
+        select *  FROM T_OMS_EMPLOYEE_BASEINFOR
+        where userCode = #userCode#
+    </select>
+
+    <select id="findEmployeeByUsercodes" resultClass="employeeBaseInfor">
+       select userCode,userNameCn  FROM T_OMS_EMPLOYEE_BASEINFOR
+        where userCode in ($userCodes$) and company=#company#
+    </select>
+
+    <update id="update" parameterClass="employeeBaseInfor">
+        UPDATE [dbo].[T_OMS_EMPLOYEE_BASEINFOR]
+        set
+        updateTime = getDate()
+        <dynamic >
+            <isNotEqual compareValue="0" prepend="," property="orgId" >
+                [orgId] = #orgId#
+            </isNotEqual>
+            <isNotNull prepend="," property="updator">
+                [updator] = #updator#
+            </isNotNull>
+            <isNotNull prepend="," property="userNameCn">
+                [userNameCn] = #userNameCn#
+            </isNotNull>
+            <isNotNull prepend="," property="userNameEn">
+                [userNameEn] = #userNameEn#
+            </isNotNull>
+            <isNotNull prepend="," property="userTitle">
+                [userTitle] = #userTitle#
+            </isNotNull>
+            <isNotNull prepend="," property="eUserTitle">
+                [eUserTitle] = #eUserTitle#
+            </isNotNull>
+            <isNotNull prepend="," property="credentialsType">
+                [credentialsType] = #credentialsType#
+            </isNotNull>
+            <isNotNull prepend="," property="credentialsNo">
+                [credentialsNo] = #credentialsNo#
+            </isNotNull>
+            <isNotNull prepend="," property="experience">
+                [experience] = #experience#
+            </isNotNull>
+            <isNotNull prepend="," property="sex">
+                [sex] = #sex#
+            </isNotNull>
+            <isNotNull prepend="," property="status">
+                [status] = #status#
+            </isNotNull>
+            <isNotNull prepend="," property="joinDate">
+                [joinDate] = #joinDate#
+            </isNotNull>
+            <isNotNull prepend="," property="formalDate">
+                [formalDate] = #formalDate#
+            </isNotNull>
+            <isNotNull prepend="," property="isBlack">
+                [isBlack] = #isBlack#
+            </isNotNull>
+            <isNotNull prepend="," property="newJoinDate">
+                [newJoinDate] = #newJoinDate#
+            </isNotNull>
+            <isNotNull prepend="," property="leaveType">
+                [leaveType] = #leaveType#
+            </isNotNull>
+            <isNotNull prepend="," property="leaveDate">
+                [leaveDate] = #leaveDate#
+            </isNotNull>
+            <isNotNull prepend="," property="leaveReason">
+                [leaveReason] = #leaveReason#
+            </isNotNull>
+            <isNotEqual compareValue="0" prepend="," property="positionId">
+                [positionId] = #positionId#
+            </isNotEqual>
+             <isNotEqual  compareValue="0" prepend="," property="levelId">
+             	[levelId] = #levelId#
+            </isNotEqual>
+        </dynamic>
+        where userCode = #userCode#
+    </update>
+
+    <select id="query" parameterClass="employeeSearch" resultClass="vEmployeeBaseInfor">
+        SELECT e.userCode,e.userNameCn,v.orgInfo as orgName ,l.levelFull,d.mobilePhone,d.officePhone
+        FROM dbo.T_OMS_EMPLOYEE_BASEINFOR  e
+        LEFT JOIN v_PartTime_Organization v ON e.userCode = v.userCode
+        LEFT JOIN dbo.T_OMS_POSITION p ON e.positionId = p.id
+        LEFT JOIN dbo.T_OMS_TITLE_LEVEL   l ON p.levelId = l.id
+        LEFT JOIN dbo.T_OMS_EMPLOYEE_DETAILS d ON e.userCode = d.userCode
+    </select>
+
+    <select id="findBranchManagerWithAssistant" resultClass="vEmployeeBaseInfor">
+    SELECT eb.userCode,ed.mobilePhone,eb.userNameCn FROM dbo.T_OMS_EMPLOYEE_POSITION ep
+	 INNER JOIN dbo.T_OMS_ORGANIZATION o ON ep.orgId=o.id
+	 INNER JOIN dbo.T_OMS_EMPLOYEE_BASEINFOR eb ON eb.userCode=ep.userCode AND eb.status IN ('正式','试用期')
+	 INNER JOIN dbo.T_OMS_EMPLOYEE_DETAILS ed ON ed.userCode=eb.userCode
+	 WHERE ep.positionId IN (2,3) AND   ep.orgId IN (
+	  SELECT orgId FROM dbo.T_OMS_EMPLOYEE_BASEINFOR WHERE userCode=#userCode#
+	 )
+    </select>
+   
+    <!--员工的分页查询-->
+    <select id="queryForPaginate2" parameterClass="vEmployeeBaseInfor" resultClass="vEmployeeBaseInfor">
+        mst_sp_pageshowex4 '$columns$ ','$table$','$where$','$orderBy$',$pageSize$,$pageNo$
+    </select>
+    <!--获取员工的总数-->
+    <select id="count2" parameterClass="vEmployeeBaseInfor" resultClass="integer">
+        sp_pagecount '$table$','$where$'
+    </select>
+
+    <!-- findInterviewEmployees 查询需要离职面谈的 -->
+    <select id="findInterviewEmployees" resultClass="vEmployeeBaseInfor">
+   	  mst_sp_pageshowex4 '$columns$','$table$','$where$','$orderBy$',$pageSize$,$pageNo$
+    </select>
+
+    <!--查找用于离职面谈的人员，包含区域，等信息 -->
+    <select id="findEmpForInterview" resultClass="vEmployeeBaseInfor">
+    SELECT EB.userCode,EB.userNameCn,P.positionName,O.orgName,EB.newJoinDate,AREA.orgName AS areaName FROM dbo.T_OMS_EMPLOYEE_BASEINFOR  eb
+	 INNER JOIN dbo.T_OMS_POSITION p ON eb.positionId=p.id
+	 INNER JOIN dbo.T_OMS_ORGANIZATION o ON eb.orgId=o.id
+	 LEFT JOIN dbo.T_OMS_ORGANIZATION area ON o.orgLongCode LIKE area.orgLongCode+'%' AND area.orgType='区域'
+	 WHERE EB.userCode=#userCode#
+    </select>
+
+    <select id="associative" parameterClass="map" resultClass="employeeBaseInfor">
+      select userCode,(userName+'('+CAST(userCode as nvarchar(10))+')') as userNameCn
+       from [v_employee_detail] where status in ('正式','试用期')
+       AND userName like '$key$%'
+       AND company = #company#
+       order by userCode,userNameCn desc
+    </select>
+
+
+    <select id="queryEmployeeByIdc" parameterClass="map" resultClass="employeeBaseInfor">
+        select userCode, isBlack from T_OMS_EMPLOYEE_BASEINFOR WHERE credentialsNo = #idc# and company = #company#
+    </select>
+
+    <select id="findById" parameterClass="Integer" resultClass="vEmployeeBaseInfor">
+       select userCode,userName as userNameCn,userNameEn,sex,credential as credentialsNo,mobilePhone,orgName,experience
+              ,serialName,titleName as userTitle,positionName,eUserTitle,status,joinDate,levelName as levelFull,titleDegree,levelDegree
+              ,leaveDate,leaveReason,leaveType
+              ,formalDate,latestJoinDate as newJoinDate
+              ,serialId,titleId,levelId,positionId,comeFromName,registerStatus,company,orgId
+       from [v_employee_detail]
+       where userCode = #userCode#
+    </select>
+
+    <select id="queryEmployeeDetails" parameterClass="map" resultClass="vEmployeeBaseInfor">
+       select userCode,userName as userNameCn,userNameEn,sex,credential as credentialsNo,mobilePhone,orgName,experience
+              ,serialName,titleName as userTitle,positionName,eUserTitle,status,joinDate,levelName as levelFull ,titleDegree,levelDegree
+              ,leaveDate,leaveReason,leaveType
+              ,formalDate,latestJoinDate as newJoinDate
+              ,serialId,titleId,levelId,positionId,orgId,createTime
+       from [v_employee_detail]
+       where userCode = #userCode# and company = #company#
+    </select>
+
+    <insert id="shieldedUserCoed" parameterClass="map">
+        INSERT INTO [T_OMS_EMPLOYEE_ACCOUNT_STATUS]
+        (
+         [userCode]
+        ,[createTime]
+        ,[creator])
+        VALUES
+        (
+         $userCode$
+        ,getdate()
+        ,$creator$
+        )
+    </insert>
+    <delete id="enableUserCode" parameterClass="integer">
+        DELETE FROM T_OMS_EMPLOYEE_ACCOUNT_STATUS
+        WHERE userCode = $userCode$
+    </delete>
+
+    <update id="updateformalDate" parameterClass="integer">
+       UPDATE [dbo].[T_OMS_EMPLOYEE_BASEINFOR]
+        set
+          [formalDate] = null
+       where userCode = #userCode#
+    </update>
+
+    <update id="updateLeave" parameterClass="integer">
+       UPDATE [dbo].[T_OMS_EMPLOYEE_BASEINFOR]
+        set
+          [leaveDate] = null
+         ,[leaveType] = null
+         ,[leaveReason] = null
+         where userCode = #userCode#
+    </update>
+
+    <update id="updatePublicoffer" parameterClass="integer">
+        UPDATE E SET E.userNameCn = O.orgName + '公盘'
+         FROM T_OMS_EMPLOYEE_BASEINFOR E   LEFT JOIN T_OMS_ORGANIZATION O
+         ON E.orgId = O.id
+         WHERE E.userNameCn like '%公盘' AND E.status='特殊账号'
+		AND O.ID = #orgId#
+    </update>
+
+    <update id="updateEmpOrgPositionByUserCode" parameterClass="integer">
+        update eop set eop.orgName = v.orgInfo, eop.positionName= v.positionInfo
+        from T_OMS_EMPLOYEE_ORG_POSITION  eop
+        inner join v2_PartTime_Organization v on eop.userCode = v.userCode
+        where v.userCode = $userCode$
+    </update>
+
+    <update id="updateEmpOrgPositionByOrgId" parameterClass="integer">
+        update eop set eop.orgName = v.orgInfo, eop.positionName= v.positionInfo
+        from T_OMS_EMPLOYEE_ORG_POSITION  eop
+        inner join v2_PartTime_Organization v on eop.userCode = v.userCode
+        where v.userCode in (
+        select userCode  from T_OMS_EMPLOYEE_POSITION
+        where orgId = $orgId$
+        )
+    </update>
+    <update id="updateEmpOrgPositionByPositionId" parameterClass="integer">
+        update eop set eop.orgName = v.orgInfo, eop.positionName= v.positionInfo
+        from T_OMS_EMPLOYEE_ORG_POSITION  eop
+        inner join v2_PartTime_Organization v on eop.userCode = v.userCode
+        where v.userCode in (
+        select userCode  from T_OMS_EMPLOYEE_POSITION
+        where positionId = $positionId$
+        )
+    </update>
+    <select id="checkUserCode" parameterClass="integer" resultClass="integer">
+        select count(1) from T_OMS_EMPLOYEE_ORG_POSITION
+        where userCode = $userCode$
+    </select>
+    <insert id="insertEmpOrgPosition">
+    insert into T_OMS_EMPLOYEE_ORG_POSITION
+    (userCode,positionName,orgName)
+    select userCode,positionInfo,orgInfo from v2_PartTime_Organization where userCode = $userCode$
+    </insert>
+    <!-- 查找负责人 -->
+    <select id="findPrincipals" resultClass="employeeBaseInfor">
+    	 SELECT eb.userCode,eb.userNameCn FROM dbo.T_OMS_EMPLOYEE_BASEINFOR eb
+		 INNER JOIN (
+	 				SELECT DISTINCT(userCode) FROM dbo.T_OMS_ORGANIZATION_HEADER_HISTORY
+	 				WHERE orgId=#orgId#
+	 				    <dynamic>
+	 				    	<isNotNull property="startTime">
+	 				    		<isNull property="endTime">
+	 				    			 AND ((endTime IS NULL AND #startTime# >=startTime) OR ( endTime > #startTime#))
+	 				    		</isNull>
+	 				    		 <isNotNull property="endTime">
+	 				    		 AND ( (endTime IS NULL AND #startTime# >=startTime )
+ 						  	 	 OR
+ 						  	 		(
+ 						  	 		  (#startTime# BETWEEN startTime AND endTime) OR
+ 						  	 		  (#endTime# BETWEEN startTime AND endTime) OR
+ 						  	 		  (startTime >=#startTime# AND #endTime# > endTime)
+ 						  	 		))
+	 				    		 </isNotNull>
+	 				    	</isNotNull>
+	 				    </dynamic>
+	 				) AS  t
+	 ON t.userCode=eb.userCode
+    </select>
+
+    <insert id="insertLog" parameterClass="map">
+        INSERT INTO [T_OMS_EMPLOYEE_BASEINFOR_LOG]
+        ([operateType],[userCode],[orgId],[levelId],[userNameCn],[userNameEn],[credentialsType],[credentialsNo],[experience],[sex],[status],[joinDate],[formalDate],[password]
+        ,[createTime],[creator],[userTitle],[updateTime],[isBlack],[newJoinDate],[leaveType],[leaveDate],[leaveReason],[positionId],[company],[eUserTitle],[updator])
+        SELECT
+         '$operateType$', [userCode],[orgId],[levelId],[userNameCn],[userNameEn],[credentialsType],[credentialsNo],[experience],[sex],[status],[joinDate],[formalDate],[password]
+        ,[createTime],[creator],[userTitle],[updateTime],[isBlack],[newJoinDate],[leaveType],[leaveDate],[leaveReason],[positionId],[company],[eUserTitle],[updator]  FROM [T_OMS_EMPLOYEE_BASEINFOR]
+           WHERE userCode = $userCode$
+    </insert>
+
+    <update id="updateUserTitile" parameterClass="map">
+     <!--
+	         UPDATE a
+	      SET userTitle= (SELECT levelName FROM dbo.T_OMS_TITLE_LEVEL WHERE id = $newLevelId$),eUserTitle=null
+	      FROM  dbo.T_OMS_EMPLOYEE_BASEINFOR AS a
+	     WHERE a.userCode = $userCode$ AND  EXISTS
+	      (
+	        SELECT 1 FROM dbo.T_OMS_EMPLOYEE_BASEINFOR eb
+			 INNER JOIN dbo.T_OMS_TITLE_LEVEL tl
+			 ON eb.levelId=tl.id AND tl.id != $newLevelId$ AND eb.userTitle=tl.levelName
+			 WHERE eb.userCode = a.userCode
+	      )
+        -->
+         UPDATE a
+      SET userTitle= (SELECT levelName FROM dbo.T_OMS_TITLE_LEVEL WHERE id = $newLevelId$),eUserTitle=null
+      FROM  dbo.T_OMS_EMPLOYEE_BASEINFOR AS a
+     WHERE a.userCode = $userCode$
+    </update>
+
+    <update id="updateUserTitle">
+         UPDATE T_OMS_EMPLOYEE_BASEINFOR
+      SET userTitle= #userTitle#,eUserTitle=null
+     WHERE userCode = #userCode#
+    </update>
+
+    <update id="resetPwd" parameterClass="employeeBaseInfor">
+       UPDATE [dbo].[T_OMS_EMPLOYEE_BASEINFOR]
+        set
+           updateTime = getDate()
+          ,password = #password#
+       where userCode = #userCode#
+    </update>
+    <select id="findIdcByUserCode" parameterClass="integer" resultClass="employeeBaseInfor">
+      select * from T_OMS_EMPLOYEE_BASEINFOR where userCode = #userCode#
+    </select>
+
+    <update id="updateStatus" parameterClass="map">
+          UPDATE [dbo].[T_OMS_EMPLOYEE_BASEINFOR]
+        set
+            updateTime = getDate(),
+        <isNotNull property="updator">
+            [updator] = #updator#,
+        </isNotNull>
+          status = #status#
+       where userCode = #userCode#
+    </update>
+
+    <!--自动更新未报到员工的状态为删除-->
+    <!--如果还要有3个月未处理的待报到员工状态自动转换成不报到的功能，请从新编写sql语句。-->
+    <!--<update id="updateStatusToDelete" parameterClass="map">-->
+         <!--UPDATE [dbo].[T_OMS_EMPLOYEE_BASEINFOR]-->
+        <!--set-->
+          <!--status = '删除'-->
+       <!--where status = '未报到' and DATEDIFF(day, createTime, GETDATE()) >  #day#-->
+    <!--</update>-->
+
+
+    <update id="updateForRegister" parameterClass="employeeBaseInfor">
+        UPDATE [dbo].[T_OMS_EMPLOYEE_BASEINFOR]
+        set
+        updateTime = getDate()
+        <dynamic >
+            <isNotNull prepend="," property="updator">
+                [updator] = #updator#
+            </isNotNull>
+            <isNotNull prepend="," property="userNameCn">
+                [userNameCn] = #userNameCn#
+            </isNotNull>
+            <isNotNull prepend="," property="userNameEn">
+                [userNameEn] = #userNameEn#
+            </isNotNull>
+            <isNotNull prepend="," property="credentialsNo">
+                [credentialsNo] = #credentialsNo#
+            </isNotNull>
+            <isNotNull prepend="," property="experience">
+                [experience] = #experience#
+            </isNotNull>
+            <isNotNull prepend="," property="sex">
+                [sex] = #sex#
+            </isNotNull>
+        </dynamic>
+        where userCode = #userCode#
+    </update>
+
+   <!-- 查询添加到黑名单的人员 -->
+   <select id="findEmpForAddBlack" resultClass="vEmployeeBaseInfor">
+		 SELECT eb.userCode,eb.userNameCn,ep.positionName,o.orgName,(STR(t.titleDegree)+'-'+tl.levelDegree) AS levelFull FROM dbo.T_OMS_EMPLOYEE_BASEINFOR eb
+		  INNER JOIN dbo.T_OMS_POSITION ep ON ep.id=eb.positionId AND eb.userCode=#userCode# AND eb.status='离职' AND eb.company=#company# 
+		  INNER JOIN dbo.T_OMS_ORGANIZATION o ON o.id=eb.orgId
+		  INNER JOIN dbo.T_OMS_TITLE_LEVEL tl ON tl.id=eb.levelId
+		  INNER JOIN dbo.T_OMS_TITLE t ON tl.titleId=t.id
+   </select>
+   
+	    <!-- 查询需要移除黑名单的人员 -->
+	   <select id="findEmpForRemoveBlack" resultClass="vEmployeeBaseInfor">
+	  	 SELECT eb.userCode,eb.userNameCn,ep.positionName,o.orgName,(STR(t.titleDegree)+'-'+tl.levelDegree) AS levelFull FROM dbo.T_OMS_EMPLOYEE_BASEINFOR eb
+			  INNER JOIN T_OMS_EMPLOYEE_BLACK_RECORDS ebr ON ebr.userCode=eb.userCode  AND eb.status IN ('离职')  AND eb.company=#company# 
+			  			AND ebr.id=#blackId# AND ebr.attachId IS NULL AND eb.isBlack=1  AND ebr.status=1
+			  INNER JOIN dbo.T_OMS_POSITION ep ON ep.id=eb.positionId 
+			  INNER JOIN dbo.T_OMS_ORGANIZATION o ON o.id=eb.orgId
+			  INNER JOIN dbo.T_OMS_TITLE_LEVEL tl ON tl.id=eb.levelId
+			  INNER JOIN dbo.T_OMS_TITLE t ON tl.titleId=t.id
+	   </select>
+	   <!-- 是否黑名单 -->
+	   <select id="isBlack" resultClass="integer">
+	     select count(1) from T_OMS_EMPLOYEE_BASEINFOR WHERE userCode=#userCode# AND isBlack=1
+	   </select>
+	   <!-- 经纪人转正 -->
+	   <select id="findEmployeeToNormal" resultClass="employeeBaseInfor">
+	     SELECT eb.userCode,eb.levelId,eb.orgId,eb.positionId FROM dbo.T_OMS_EMPLOYEE_BASEINFOR eb WHERE eb.status IN ('试用期') AND
+				 DATEADD(m,-6,GETDATE()) >= ISNULL(eb.newJoinDate,eb.joinDate)
+	   </select>
+    <!-- start 同步RTX和邮箱（Exchange） 东风提供     -->
+    <update id="synUpdateErp" >
+	     exec Dooiooerp.dbo.Agency3_SyncRTXExchange #newPassword#, #userCode#
+	   </update>
+    <update id="updateErpPassword">
+	     update dooiooerp.dbo.Agency_Employee  set FullPwd=#password# where id=#userCode#
+	</update>
+
+    <select id="getBirthdayEmployee" resultClass="vEmployeeBaseInfor">
+ 		SELECT a.lunarCalendar,a.userCode as userCode, b.userNameCn as userNameCn, 
+ 					a.mobilePhone as mobilePhone,  b.orgId as orgId,
+       			  b.company as company
+            FROM T_OMS_EMPLOYEE_DETAILS as a
+            inner join  T_OMS_EMPLOYEE_BASEINFOR as b on a.userCode = b.userCode
+            WHERE (b.status IN ('正式','试用期'))
+            and a.mobilePhone is not null AND				
+              (
+	              ((a.bornMonth = MONTH(GETDATE()) AND a.bornDayTime = DAY(GETDATE())) 
+	              AND (a.lunarCalendar=1 OR a.lunarCalendar IS NULL))
+	              <isNotEmpty property="lunar">
+             		 OR(a.lunarCalendar=0 AND a.bornMonth=#month# AND a.bornDayTime=#day# )
+	              </isNotEmpty>
+              )
+    </select>
+
+    <select id="getOldEmployee" resultClass="vEmployeeBaseInfor">
+       SELECT a.userCode as userCode, b.userNameCn as userNameCn,
+		 a.mobilePhone as mobilePhone, b.orgId as orgId,
+        ISNULL(year(getdate())-year(b.newJoinDate), '0')  as years,
+        b.company as company
+        FROM T_OMS_EMPLOYEE_DETAILS as a
+        inner join T_OMS_EMPLOYEE_BASEINFOR as b on a.userCode = b.userCode
+        WHERE (b.status IN ('正式','试用期'))
+        and a.mobilePhone is not null
+        and month(b.newJoinDate)=month(getdate())
+        and day(b.newJoinDate)=day(getdate())
+        and b.newJoinDate <![CDATA[ <= ]]> dateadd(year,-2,getdate())
+    </select>
+
+    <select id="getTogetherEmployee" resultClass="vEmployeeBaseInfor">
+       select ot.*,ed.mobilePhone from T_OMS_EMPLOYEE_BASEINFOR as ot
+        left join T_OMS_EMPLOYEE_DETAILS AS ed on ot.userCode = ed.userCode
+        where ot.orgId =
+          (select o.id from T_OMS_ORGANIZATION as o where o.id =
+              (select e.orgId from T_OMS_EMPLOYEE_BASEINFOR as e where e.userCode = #userCode#
+              )
+          )
+        and ot.status in ('正式','试用期') and ot.userCode != #userCode#
+    </select>
+
+    <select id="findorgLongNameByUserCode" resultClass="String">
+        SELECT LEFT(t.longName, LEN(t.longName) -1) AS longName FROM (
+        SELECT (
+        SELECT TOP 4 po.orgName + '/' FROM dbo.T_OMS_ORGANIZATION o
+        LEFT JOIN dbo.T_OMS_ORGANIZATION po ON o.orgLongCode LIKE po.orgLongCode + '%'
+        WHERE
+        o.id = (SELECT orgId FROM dbo.T_OMS_EMPLOYEE_BASEINFOR WHERE userCode = #userCode#) AND po.orgLevel != 0
+        ORDER BY po.orgLevel DESC FOR XML PATH('')) AS longName
+        ) t
+    </select>
+
+    <select id="queryBySmsReports" resultClass="vEmployeeBaseInfor">
+         SELECT b.userCode, b.userNameCn,d.mobilePhone,b.creator FROM T_OMS_EMPLOYEE_BASEINFOR b
+          INNER JOIN dbo.T_OMS_EMPLOYEE_DETAILS d ON d.userCode = b.userCode
+          WHERE
+        <isNotNull property="smsReportsList">
+            <![CDATA[ d.mobilePhone IN ]]>
+            <iterate property="smsReportsList" conjunction="," open="(" close=")">
+                #smsReportsList[].phone#
+            </iterate>
+        </isNotNull>
+
+    </select>
+
+	<select id="searchEmpByCodeAndName" resultClass="hashMap">
+		SELECT TOP 10 userCode
+			   ,userName
+			   ,orgId
+			   ,orgName
+			   ,userName + '（' + Cast(userCode AS VARCHAR) + ' ' + orgName + '）' AS longName
+			   ,latestJoinDate AS newJoinDate
+		FROM dbo.v2_employee_final with(nolock)
+		WHERE company = #company#
+		  AND status IN ('正式', '试用期')
+		  AND (userCode LIKE #keyword# + '%' OR userName LIKE #keyword# + '%')
+	</select>
+
+    <select id="queryByOrgId" resultClass="employeeBaseInfor">
+        SELECT userCode, orgId, positionId, levelId FROM dbo.T_OMS_EMPLOYEE_BASEINFOR WITH(NOLOCK)
+        WHERE orgId = #orgId# AND status IN ('正式', '试用期')
+    </select>
+
+</sqlMap>
